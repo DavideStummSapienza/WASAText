@@ -1,0 +1,657 @@
+openapi: 3.0.0
+info:
+  title: WASAText
+  description: |
+    This API allows the user to become part of the WASAText Social Network.
+    The user will be able to chat with other users or user groups.
+  version: 0.0.1
+  
+  
+components:
+  securitySchemes:
+    bearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      description: "Use the user identifier in place of a Bearer token"
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+  schemas:
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Hello"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-01-01T23:45:00Z"
+        sendersUsername:
+          type: string
+          example: "Bob"
+          description: |
+            Sender's Username. Null if not needed.
+        receivedCheckmark:
+          type: string
+          example: "https://example.com/checkmark-received.png"
+          description: "URL to the 'received' checkmark image. Null if not needed."
+        readCheckmark:
+          type: string
+          example: "https://example.com/checkmark-read.png"
+          description: "URL to the 'read' checkmark image. Null if not needed."
+
+paths:
+  /session:
+    post:
+      tags: ["Login"]
+      summary: Logs in the user
+      description: |
+        If the user does not exist, it will be created,
+        and an identifier is returned.
+        If the user exists, the user identifier is returned.
+      operationId: doLogin
+      requestBody:
+        description: User details
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Maria
+                  pattern: "^.*?$"
+                  minLength: 3
+                  maxLength: 16
+        required: true
+      responses:
+        "201":
+          description: User log-in action successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  identifier:
+                    # change here if you decide to use an integer
+                    # or any other type of identifier
+                    type: integer
+                    example: 484916884
+  /users:
+    get:
+      tags: [Search]
+      summary: Search for users
+      description: |
+        Allows the user to search for other WASAText users by username or part of a username.
+      operationId: searchUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: query
+          required: false
+          description: A partial or full username to search for
+          schema:
+            type: string
+            example: "Mari"
+      responses:
+        "200":
+          description: |
+            A list of users matching the search criteria.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    username:
+                      type: string
+                      example: "Maria"
+                    profilePhoto:
+                      type: string
+                      example: "https://example.com/photo.jpg"
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}:
+    parameters:
+    - name: username
+      in: path
+      required: true
+      description: this is the user id
+      schema:
+        type: string
+        description: e.g., /users/Maria
+    put:
+      tags: ["User Profile"]
+      summary: Changes the username
+      description: User can change their username shown to others
+      operationId: setMyUserName
+      requestBody:
+        description: New username
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newName:
+                  type: string
+                  example: Peter
+                  pattern: "^.*?$"
+                  minLength: 3
+                  maxLength: 16
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Username has been successfully changed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newName:
+                    type: string
+                    example: Peter
+        "400":
+          description: User entered wrong format or too many/few characters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  wrongInput:
+                    type: string
+                    enum:
+                    - forbidden characters used
+                    - input too short
+                    - input too long
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    get:
+      tags: ["User Profile"]
+      summary: List Users Convesations
+      description: |
+        returns a list of all Conversations of the User
+      operationId: getMyConversations
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            request accepted, all conversations listed in content
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    convoName:
+                      type: string
+                      example: John or WASAGroup
+                      pattern: "^.*?$"
+                      minLength: 3
+                      maxLength: 16
+                    profilePicture:
+                      type: string
+                      example: https://www.images.com/images/{image}
+                    time:
+                      type: string
+                      example: 21:56
+                    date:
+                      type: string
+                      example: 23.10.2024
+                    messageContent:
+                      type: string
+                      example: Hello or Imageresource
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}/profilepicture:
+    parameters:
+    - name: username
+      in: path
+      required: true
+      description: this is the user id
+      schema:
+        type: string
+        description: e.g., /users/Maria
+    put:
+      tags: ["User Profile"]
+      summary: Changes the Profil Picture of the user
+      description: User can change their profile picture shown to others
+      operationId: setMyPhoto
+      requestBody:
+        description: New Profil Picture
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newPicture:
+                  type: string
+                  example: https://www.images.com/images/{image}
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Profil Picture has been successfully changed
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}/conversations/{partnerUsername}:
+    parameters:
+    - name: username
+      in: path
+      required: true
+      description: this is the user id
+      schema:
+        type: string
+        description: e.g., /users/Maria
+    - name: partnerUsername
+      in: path
+      required: true
+      description: username of conversation partner
+      schema:
+        type: string
+        example: Tom
+        minLength: 3
+        maxLength: 16
+    get:
+      tags: ["Conversation"]
+      summary: shows the user a specific conversation
+      description: |
+        the user wants to see a previous conversation and can access it by using the conversation partner's username
+      operationId: getConversation
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Username found, result is the searched conversation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MessageResponse"
+                      
+        "404":
+          description: |
+            partnerUsername not found
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    post:
+      tags: [Conversation]
+      summary: Sends a new Message
+      description: |
+        Sends a new message. If the conversation doesnt exist yet, it will create it.
+      operationId: sendMessage
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: |
+            Sends a new Message to an existing conversation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MessageResponse"
+        "201":
+          description: |
+            New conversation successfully started and message delivered.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: The partner username does not exist
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}/conversations/{partnerUsername}/{messagetimestamp}:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        description: this is the user id
+        schema:
+          type: string
+          description: e.g., /users/Maria
+      - name: partnerUsername
+        in: path
+        required: true
+        description: username of conversation partner
+        schema:
+          type: string
+          example: Maria
+          minLength: 3
+          maxLength: 16
+      - name: messagetimestamp
+        in: path
+        required: true
+        description: the timestamp of a certain message
+        schema:
+          type: string
+          format: date-time
+          example: "2023-01-01T23:45:00Z"
+    post:
+      tags: ["Conversation"]
+      summary: Forward a message to another user
+      description: |
+        Forwards an existing message to a different conversation partner.
+      operationId: forwardMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        description: |
+          The message to forward and the new recipient.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                recipientUsername:
+                  type: string
+                  description: "The username of the recipient to forward the message to"
+                  example: "JohnDoe"
+      responses:
+        "200":
+          description: Message forwarded successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Message forwarded successfully!"
+                  forwardedMessage:
+                    $ref: "#/components/schemas/MessageResponse"
+        "404":
+          description: The recipient or message was not found.
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  
+      
+
+    delete:
+        tags: ["Conversation"]
+        summary: delete a message
+        description: the user deletes a message
+        operationId: deleteMessage
+        security:
+          - bearerAuth: []
+        responses:
+          "200":
+            description: |
+              Message deleted, returns conversation without deletet message.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/MessageResponse"
+          "404":
+            description: The partner username does not exist
+          "401":
+            $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}/conversations/{partnerUsername}/{messagetimestamp}/comment:
+    parameters:
+      - name: username
+        in: path
+        required: true
+        description: this is the user id
+        schema:
+          type: string
+          description: e.g., /users/Maria
+      - name: partnerUsername
+        in: path
+        required: true
+        description: username of conversation partner
+        schema:
+          type: string
+          example: Maria
+          minLength: 3
+          maxLength: 16
+      - name: messagetimestamp
+        in: path
+        required: true
+        description: the timestamp of a certain message
+        schema:
+          type: string
+          format: date-time
+          example: "2023-01-01T23:45:00Z"
+    put:
+      tags: ["Comment"]
+      summary: make a comment
+      operationId: commentMessage
+      security:
+          - bearerAuth: []
+      description: |
+        user comments on a certain message
+      requestBody:
+        description: comment from user on message
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "https://example.com/checkmark-received.png"
+                  description: |
+                    URL to emoticon for the comment
+        required: true  
+      responses:
+        "200":
+          description: |
+            successesfully commented on the message, returns conversation with commented message
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MessageResponse"
+        "404":
+            description: The partner username does not exist
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    delete:
+        tags: ["Comment"]
+        summary: delete a comment
+        description: the user deletes a comment from a message
+        operationId: uncommentMessage
+        security:
+          - bearerAuth: []
+        responses:
+          "200":
+            description: |
+              Comment deleted, returns conversation without the comment on the message.
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/MessageResponse"
+          "404":
+            description: The partner username does not exist
+          "401":
+            $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}/groups:
+    parameters:
+    - name: username
+      in: path
+      required: true
+      description: this is the user id
+      schema:
+        type: string
+        description: e.g., /users/Maria
+    put:
+      tags: ["Groups"]
+      summary: adds a user to a group
+      operationId: addToGroup
+      security:
+        - bearerAuth: []
+      description: |
+        adds a user to an existing group, if the group doesnt exists it creates a new group
+      requestBody:
+        description: |
+          group name and names of the users which should be added
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupName:
+                  type: string
+                  example: "WASAGroup"
+                  description: |
+                    Name of the Group to which the users should be added
+                names:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: "Harry"
+                        description: |
+                          name of the user which should be added
+        required: true
+      responses:
+        "201":
+          description: |
+            Group successfully created!
+        "200":
+          description: |
+            users successfully added!
+        "404":
+          description: |
+            users not found!
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}/groups/{groupname}:
+    parameters:
+    - name: username
+      in: path
+      required: true
+      description: this is the user id
+      schema:
+        type: string
+        description: e.g., /users/Maria
+    - name: groupname
+      in: path
+      required: true
+      description: the group name
+      schema:
+        type: string
+        description: e.g., /users/Maria/groups/WASAGroup
+    put:
+      tags: ["Groups"]
+      summary: changes group name
+      operationId: setGroupName
+      security:
+        - bearerAuth: []
+      description: |
+        changes the name of the group
+      requestBody:
+        description: |
+          new group name
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupName:
+                  type: string
+                  example: "WASAGroup"
+                  description: |
+                    new group name
+        required: true
+      responses:
+        "200":
+          description: |
+            group name successfully changed!
+        "404":
+          description: |
+            group not found!
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    delete:
+      tags: ["Groups"]
+      summary: leaves a group
+      operationId: leaveGroup
+      security:
+        - bearerAuth: []
+      description: |
+        user leaves the group
+      responses:
+        "200":
+          description: |
+            user left group successfully!
+        "404":
+          description: |
+            group not found!
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+  /users/{username}/groups/{groupname}/groupphoto:
+    parameters:
+    - name: username
+      in: path
+      required: true
+      description: this is the user id
+      schema:
+        type: string
+        description: e.g., /users/Maria
+    - name: groupname
+      in: path
+      required: true
+      description: the group name
+      schema:
+        type: string
+        description: e.g., /users/Maria/groups/WASAGroup
+    put:
+      tags: ["Groups"]
+      summary: changes group picture
+      operationId: setGroupPhoto
+      security:
+        - bearerAuth: []
+      description: |
+        changes the photo of the group
+      requestBody:
+        description: |
+          new group photo
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                groupName:
+                  type: string
+                  example: "https://example.com/group-photo.png"
+                  description: |
+                    new group photo
+        required: true
+      responses:
+        "200":
+          description: |
+            group photo successfully changed!
+        "404":
+          description: |
+            group or group photo not found!
+        "401":
+          $ref: "#/components/responses/UnauthorizedError"
+    
+      
+      
+
+        
+        
+    
+                    
+    
+            
