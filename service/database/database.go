@@ -59,57 +59,36 @@ func New(db *sql.DB) (AppDatabase, error) {
 	tables := map[string]string{
 		"users": `
 			CREATE TABLE IF NOT EXISTS users (
-				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				username TEXT UNIQUE NOT NULL,
-				name TEXT,
+				username TEXT UNIQUE NOT NULL PRIMARY KEY,
 				profile_photo_url TEXT,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+				auth_token INTEGER UNIQUE NOT NULL
 			);
 		`,
 		"conversations": `
 			CREATE TABLE IF NOT EXISTS conversations (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				name TEXT,
-				is_group BOOLEAN DEFAULT FALSE,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-			);
-		`,
-		"conversation_members": `
-			CREATE TABLE IF NOT EXISTS conversation_members (
-				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-				user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-				joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-				UNIQUE (conversation_id, user_id)
+				from_user TEXT REFERENCES users(username) ON DELETE CASCADE,
+				to_user TEXT REFERENCES users(username) ON DELETE CASCADE,
+				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE
 			);
 		`,
 		"messages": `
 			CREATE TABLE IF NOT EXISTS messages (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-				sender_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
 				content TEXT,
+				is_photo BOOLEAN DEFAULT FALSE,
 				photo_url TEXT,
+				received BOOLEAN DEFAULT FALSE,
+				read BOOLEAN DEFAULT FALSE,
+				comment_id INTEGER NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			);
 		`,
-		"message_status": `
-			CREATE TABLE IF NOT EXISTS message_status (
+		"comments": `
+			CREATE TABLE IF NOT EXISTS comments (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-				user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-				status TEXT CHECK(status IN ('sent', 'received', 'read')) DEFAULT 'sent',
-				updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-				UNIQUE (message_id, user_id)
-			);
-		`,
-		"reactions": `
-			CREATE TABLE IF NOT EXISTS reactions (
-				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-				user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-				reaction_type TEXT,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+				reactor_id INTEGER NOT NULL REFERENCES users(username) ON DELETE CASCADE,
+				content TEXT
 			);
 		`,
 	}
@@ -119,6 +98,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 	for tableName, createStmt := range tables {
 		_, err := db.Exec(createStmt)
 		if err != nil {
+			fmt.Printf("SQL Error: Failed to create table %s. Statement: %s, Error: %v\n", tableName, createStmt, err)
 			return nil, fmt.Errorf("error creating table %s: %w", tableName, err)
 		}
 	}
