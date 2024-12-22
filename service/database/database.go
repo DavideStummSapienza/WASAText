@@ -69,6 +69,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				from_user TEXT REFERENCES users(username) ON DELETE CASCADE,
 				to_user TEXT REFERENCES users(username) ON DELETE CASCADE,
+				to_group TEXT REFERENCES groups(groupname) ON DELETE CASCADE,
 				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE
 			);
 		`,
@@ -78,17 +79,36 @@ func New(db *sql.DB) (AppDatabase, error) {
 				content TEXT,
 				is_photo BOOLEAN DEFAULT FALSE,
 				photo_url TEXT,
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+			);
+		`,
+		"message_status": `
+			CREATE TABLE IF NOT EXISTS message_status (
+				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+				user_id TEXT NOT NULL REFERENCES users(username) ON DELETE CASCADE,
 				received BOOLEAN DEFAULT FALSE,
 				read BOOLEAN DEFAULT FALSE,
-				comment_id INTEGER NOT NULL REFERENCES comments(id) ON DELETE CASCADE,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+				PRIMARY KEY (message_id, user_id)
 			);
 		`,
 		"comments": `
 			CREATE TABLE IF NOT EXISTS comments (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				reactor_id INTEGER NOT NULL REFERENCES users(username) ON DELETE CASCADE,
+				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
 				content TEXT
+			);
+		`,
+		"groups": `
+			CREATE TABLE IF NOT EXISTS groups (
+				groupname TEXT NOT NULL PRIMARY KEY,
+				group_photo TEXT
+			);
+		`,
+		"group_members": `
+			CREATE TABLE IF NOT EXISTS group_members (
+				groupname TEXT NOT NULL REFERENCES groups(groupname) ON DELETE CASCADE,
+				membername TEXT NO NULL REFERENCES users(username) ON DELETE CASCADE
 			);
 		`,
 	}
