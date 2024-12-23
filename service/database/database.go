@@ -38,6 +38,11 @@ import (
 
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
+
+	// Userrelated Functions
+	CreateUser(username string, profilePhotoURL string, authToken int) error
+	SearchUser(partialUsername string) ([]string, error)
+
 	GetName() (string, error)
 	SetName(name string) error
 
@@ -102,7 +107,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		"groups": `
 			CREATE TABLE IF NOT EXISTS groups (
 				groupname TEXT NOT NULL PRIMARY KEY,
-				group_photo TEXT
+				group_photo_url TEXT
 			);
 		`,
 		"group_members": `
