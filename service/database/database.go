@@ -42,6 +42,7 @@ type AppDatabase interface {
 	// Userrelated Functions
 	CreateUser(username string, profilePhotoURL string, authToken int) error
 	SearchUser(partialUsername string) ([]string, error)
+	LoadUserConversations(username string) ([]ConversationPreview, error)
 
 	GetName() (string, error)
 	SetName(name string) error
