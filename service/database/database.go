@@ -43,6 +43,10 @@ type AppDatabase interface {
 	CreateUser(username string, profilePhotoURL string, authToken int) error
 	SearchUser(partialUsername string) ([]string, error)
 	LoadUserConversations(username string) ([]ConversationPreview, error)
+	ChangeUsername(oldUsername, newUsername string) error
+	ChangeProfilePicture(username, newProfilePhotoURL string) error
+
+	// Conversation Functions
 
 	GetName() (string, error)
 	SetName(name string) error
