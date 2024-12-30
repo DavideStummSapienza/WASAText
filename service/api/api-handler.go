@@ -23,7 +23,7 @@ func (rt *_router) Handler() http.Handler {
 
 	// Conversation
 	rt.router.GET("/conversations/:partner-username", rt.showConversation)
-	rt.router.POST("/conversations/:partner-username", rt.startNewConversation)
+	rt.router.POST("/conversations/:partner-username", rt.sendMessage)
 	rt.router.POST("/conversations/:partner-username/messages/:message-timestamp", rt.forwardMessage)
 	rt.router.DELETE("/conversations/:partner-username/messages/:message-timestamp", rt.deleteMessage)
 

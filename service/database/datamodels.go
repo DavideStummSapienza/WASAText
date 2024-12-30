@@ -18,6 +18,13 @@ type ConversationDetail struct {
 	PhotoURL  string    `json:"photo_url"`  // URL of the photo (if IsPhoto is true)
 	Timestamp time.Time `json:"timestamp"`  // Timestamp of when the message was created
 	Sender    string    `json:"sender"`     // Sender of the message
-	Status    string    `json:"status"`     // Status of the message (received, read)
+	Received  bool      `json:"received"`   // Received-Status of the message
+	Read      bool      `json:"read"`       // Read-Status of the message
 	Reactions []string  `json:"reactions"`  // List of user reactions (comments)
+}
+
+// Reaction represents the Reaction on a message in a conversation.
+type Reaction struct {
+	Reactor string `json:"reactor"` // username of the Reactor
+	Content string `json:"content"` // Content of the Reaction (e.g. Emoji)
 }

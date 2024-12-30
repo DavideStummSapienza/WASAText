@@ -47,6 +47,8 @@ type AppDatabase interface {
 	ChangeProfilePicture(username, newProfilePhotoURL string) error
 
 	// Conversation Functions
+	ShowConversation(username, conversationID string) ([]ConversationDetail, error)
+	SendMessage(fromUser, toUser, messageContent string, isPhoto bool, photoURL string) (int, error)
 
 	GetName() (string, error)
 	SetName(name string) error
