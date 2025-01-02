@@ -34,6 +34,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 )
 
 // AppDatabase is the high level interface for the DB
@@ -49,6 +50,17 @@ type AppDatabase interface {
 	// Conversation Functions
 	ShowConversation(username, conversationID string) ([]ConversationDetail, error)
 	SendMessage(fromUser, toUser, messageContent string, isPhoto bool, photoURL string) (int, error)
+	DeleteMessage(partnerUsername string, currentUser string, messageTimestamp time.Time) error
+
+	// Comment Functions
+	AddComment(messageTimestamp time.Time, partnerUsername string, currentUser string, content string) error
+	DeleteComment(messageID int, reactorUsername string) error
+
+	// Group Functions
+	AddToGroup(groupname string, usernames []string, currentUser string) error
+	ChangeGroupPicture(groupName string, newPhotoURL string) error
+	ChangeGroupName(oldGroupName string, newGroupName string) error
+	LeaveGroup(groupName string, currentUser string) error
 
 	GetName() (string, error)
 	SetName(name string) error
@@ -106,7 +118,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		"comments": `
 			CREATE TABLE IF NOT EXISTS comments (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				reactor_id INTEGER NOT NULL REFERENCES users(username) ON DELETE CASCADE,
+				reactor_username TEXT NOT NULL REFERENCES users(username) ON DELETE CASCADE,
 				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
 				content TEXT
 			);
@@ -120,7 +132,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 		"group_members": `
 			CREATE TABLE IF NOT EXISTS group_members (
 				groupname TEXT NOT NULL REFERENCES groups(groupname) ON DELETE CASCADE,
-				membername TEXT NO NULL REFERENCES users(username) ON DELETE CASCADE
+				membername TEXT NOT NULL REFERENCES users(username) ON DELETE CASCADE
 			);
 		`,
 	}
