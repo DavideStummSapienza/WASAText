@@ -41,6 +41,7 @@ import (
 type AppDatabase interface {
 
 	// Userrelated Functions
+	GetUser(username string) (*User, error)
 	CreateUser(username string, profilePhotoURL string, authToken int) error
 	SearchUser(partialUsername string) ([]string, error)
 	LoadUserConversations(username string) ([]ConversationPreview, error)
