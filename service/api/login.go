@@ -11,7 +11,7 @@ import (
 
 // Define a struct to parse the incoming JSON request body and outgoing response
 type LoginRequest struct {
-	Name string `json:"name"`
+	Username string `json:"username"`
 }
 
 type LoginResponse struct {
@@ -34,13 +34,13 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	}
 
 	// Validate the username (length and regex)
-	if len(request.Name) < 3 || len(request.Name) > 16 {
+	if len(request.Username) < 3 || len(request.Username) > 16 {
 		http.Error(w, `{"error": "name must be between 3 and 16 characters"}`, http.StatusBadRequest)
 	}
 
 	// Check if the user already exists in the database
 	// Check if the username already exists using GetUser
-	existingUser, err := rt.db.GetUser(request.Name)
+	existingUser, err := rt.db.GetUser(request.Username)
 	if err == nil {
 		// If user exists, respond with their identifier
 		response := LoginResponse{Identifier: existingUser.AuthToken}
@@ -55,7 +55,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	// If the user does not exist, create a new user and return the generated token
 	authToken := generateToken() // Generate a random auth token
-	rt.db.CreateUser(request.Name, "placeholder", authToken)
+	rt.db.CreateUser(request.Username, "placeholder", authToken)
 
 	// Respond with the newly created user's auth token
 	response := LoginResponse{Identifier: authToken}
