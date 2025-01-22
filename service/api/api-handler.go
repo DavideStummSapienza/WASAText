@@ -13,6 +13,10 @@ func (rt *_router) Handler() http.Handler {
 	// Login
 	rt.router.POST("/session", rt.login)
 
+	// Geschützte Route mit Middleware
+	//protected := AuthMiddleware(http.HandlerFunc(yourProtectedHandler))
+	//rt.router.Handler("GET", "/protected-endpoint", protected)
+
 	// Search
 	rt.router.GET("/users", rt.searchUsers)
 

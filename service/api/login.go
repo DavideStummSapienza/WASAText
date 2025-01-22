@@ -36,6 +36,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	// Validate the username (length and regex)
 	if len(request.Username) < 3 || len(request.Username) > 16 {
 		http.Error(w, `{"error": "name must be between 3 and 16 characters"}`, http.StatusBadRequest)
+		return
 	}
 
 	// Check if the user already exists in the database
