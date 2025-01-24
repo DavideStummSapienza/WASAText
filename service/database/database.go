@@ -40,6 +40,9 @@ import (
 // AppDatabase is the high level interface for the DB
 type AppDatabase interface {
 
+	//Securityralated Functions
+	GetUsernameByToken(token string) (string, error)
+
 	// Userrelated Functions
 	GetUser(username string) (*User, error)
 	CreateUser(username string, profilePhotoURL string, authToken int) error
