@@ -5,19 +5,22 @@ import (
 	"errors"
 )
 
-// GetUsernameByToken prüft, ob das Token existiert, und gibt den zugehörigen Benutzernamen zurück
+// GetUsernameByToken checks if the token exists and returns the associated username.
+// If the token does not exist, it returns an empty string and no error.
+// If there is a database error, it returns the error.
 func (db *appdbimpl) GetUsernameByToken(token string) (string, error) {
     var username string
+    // SQL query to find the username associated with the provided token.
     query := `SELECT username FROM users WHERE auth_token = ?`
     err := db.c.QueryRow(query, token).Scan(&username)
     if err != nil {
         if errors.Is(err, sql.ErrNoRows) {
-            // Kein Benutzer mit diesem Token gefunden
+            // No user found with this token; return an empty username and no error.
             return "", nil
         }
-        // Anderer Datenbankfehler
+        // Some other database error occurred; return the error.
         return "", err
     }
-    // Benutzername gefunden
+    // Username successfully found; return it.
     return username, nil
 }
