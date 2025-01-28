@@ -18,6 +18,7 @@ type ConversationDetail struct {
 	PhotoURL  string    `json:"photo_url"`  // URL of the photo (if IsPhoto is true)
 	Timestamp time.Time `json:"timestamp"`  // Timestamp of when the message was created
 	Sender    string    `json:"sender"`     // Sender of the message
+	Receiver  string	`json:"receiver"`   // Receiver of the message
 	Received  bool      `json:"received"`   // Received-Status of the message
 	Read      bool      `json:"read"`       // Read-Status of the message
 	Reactions []string  `json:"reactions"`  // List of user reactions (comments)

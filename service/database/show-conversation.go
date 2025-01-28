@@ -6,30 +6,37 @@ import "fmt"
 // It includes details like message content, sender information, timestamps, delivery/read status,
 // and any reactions associated with each message. The function organizes messages in reverse
 // chronological order, ensuring the newest messages are displayed first.
-func (db *appdbimpl) ShowConversation(username, conversationID string) ([]ConversationDetail, error) {
+func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) ([]ConversationDetail, error) {
 	var conversation []ConversationDetail
 
 	// 1. Retrieve all messages for the conversation
 	rows, err := db.c.Query(`
-        SELECT 
-            m.id, 
-            m.content, 
-            m.is_photo, 
-            m.photo_url, 
-            m.created_at, 
-            ms.user_id, 
-            ms.received, 
-            ms.read
-        FROM messages m
-        LEFT JOIN message_status ms ON m.id = ms.message_id
-        WHERE m.id IN (
-            SELECT message_id
-            FROM conversations
-            WHERE (from_user = ? OR to_user = ? OR to_group = ?)
-        )
-        ORDER BY m.created_at DESC`, username, username, conversationID)
+    SELECT 
+        m.id, 
+        m.content, 
+        m.is_photo, 
+        m.photo_url, 
+        m.created_at,
+		c.from_user, 
+        ms.user_id, 
+        ms.received, 
+        ms.read
+    FROM messages m
+    LEFT JOIN message_status ms ON m.id = ms.message_id
+	LEFT JOIN conversations c ON m.id = c.message_id
+    WHERE m.id IN (
+        SELECT message_id
+        FROM conversations
+        WHERE 
+            (from_user = ? AND to_user = ?) 
+            OR (from_user = ? AND to_user = ?) 
+            OR to_group = ?
+    )
+    ORDER BY m.created_at DESC`, 
+    username, conversationPartnerName, conversationPartnerName, username, conversationPartnerName)
+	
 	if err != nil {
-		return nil, fmt.Errorf("error querying messages for conversation '%s': %w", conversationID, err)
+		return nil, fmt.Errorf("error querying messages for conversation '%s': %w", conversationPartnerName, err)
 	}
 	defer rows.Close()
 
@@ -37,7 +44,7 @@ func (db *appdbimpl) ShowConversation(username, conversationID string) ([]Conver
 	for rows.Next() {
 		var msg ConversationDetail
 
-		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.Timestamp, &msg.Sender, &msg.Received, &msg.Read); err != nil {
+		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.Timestamp, &msg.Sender, &msg.Receiver, &msg.Received, &msg.Read); err != nil {
 			return nil, fmt.Errorf("error scanning message row: %w", err)
 		}
 
