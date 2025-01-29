@@ -55,6 +55,7 @@ type AppDatabase interface {
 	ShowConversation(username, conversationPartnerName string) ([]ConversationDetail, error)
 	SendMessage(fromUser, toUser, messageContent string, isPhoto bool, photoURL string) (int, error)
 	DeleteMessage(partnerUsername string, currentUser string, messageTimestamp time.Time) error
+	MarkAllMessagesAsReceived(conversationPartner string, username string) error
 
 	// Comment Functions
 	AddComment(messageTimestamp time.Time, partnerUsername string, currentUser string, content string) error

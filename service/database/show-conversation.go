@@ -9,7 +9,6 @@ import "fmt"
 func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) ([]ConversationDetail, error) {
 	var conversation []ConversationDetail
 
-	// 1. Retrieve all messages for the conversation
 	rows, err := db.c.Query(`
     SELECT 
         m.id, 
@@ -17,13 +16,11 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
         m.is_photo, 
         m.photo_url, 
         m.created_at,
-		c.from_user, 
-        ms.user_id, 
-        ms.received, 
-        ms.read
+        c.from_user, 
+        (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
+        (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
     FROM messages m
-    LEFT JOIN message_status ms ON m.id = ms.message_id
-	LEFT JOIN conversations c ON m.id = c.message_id
+    JOIN conversations c ON m.id = c.message_id
     WHERE m.id IN (
         SELECT message_id
         FROM conversations
@@ -34,7 +31,7 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
     )
     ORDER BY m.created_at DESC`, 
     username, conversationPartnerName, conversationPartnerName, username, conversationPartnerName)
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("error querying messages for conversation '%s': %w", conversationPartnerName, err)
 	}
@@ -44,7 +41,7 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
 	for rows.Next() {
 		var msg ConversationDetail
 
-		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.Timestamp, &msg.Sender, &msg.Receiver, &msg.Received, &msg.Read); err != nil {
+		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead); err != nil {
 			return nil, fmt.Errorf("error scanning message row: %w", err)
 		}
 
