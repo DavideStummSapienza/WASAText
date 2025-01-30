@@ -57,6 +57,8 @@ type AppDatabase interface {
 	DeleteMessage(partnerUsername string, currentUser string, messageTimestamp time.Time) error
 	MarkAllMessagesAsReceived(partnerUsername string, username string) error
 	MarkAllMessagesAsRead(username string, partnerUsername string) error
+	GetMessage(messageID *int, username, partnerUsername string) (*ConversationDetail, error)
+
 
 	// Comment Functions
 	AddComment(messageTimestamp time.Time, partnerUsername string, currentUser string, content string) error
