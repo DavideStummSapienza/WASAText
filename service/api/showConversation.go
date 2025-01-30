@@ -47,8 +47,15 @@ func (rt *_router) showConversation(w http.ResponseWriter, r *http.Request, ps h
 		return
 	}
 
+	// Mark all messages in the conversation as received.
+	err := rt.db.MarkAllMessagesAsReceived(username, partnerUsername)
+	if err != nil {
+		http.Error(w, `{"error": "failed to update message status"}`, http.StatusInternalServerError)
+		return
+	}
+
 	// Mark all messages in the conversation as read.
-	err := rt.db.MarkAllMessagesAsRead(username, partnerUsername)
+	err = rt.db.MarkAllMessagesAsRead(username, partnerUsername)
 	if err != nil {
 		// If there is an error updating message status, respond with 500 Internal Server Error.
 		http.Error(w, `{"error": "failed to update message status"}`, http.StatusInternalServerError)
