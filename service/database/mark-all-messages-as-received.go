@@ -3,7 +3,7 @@ package database
 import "fmt"
 
 // MarkAllMessagesAsReceived marks all messages in a conversation (1:1 or group) as received for a user.
-func (db *appdbimpl) MarkAllMessagesAsReceived(conversationPartner string, username string) error {
+func (db *appdbimpl) MarkAllMessagesAsReceived(partnerUsername string, username string) error {
 	_, err := db.c.Exec(`
 		UPDATE message_status
 		SET received = TRUE
@@ -15,8 +15,8 @@ func (db *appdbimpl) MarkAllMessagesAsReceived(conversationPartner string, usern
 				(c.to_user = ? AND c.from_user = ?) OR
 				(c.to_group = ? AND ? IN (SELECT user FROM group_members WHERE groupname = c.to_group))
 		) AND user_id = ?`,
-		username, conversationPartner, 
-		conversationPartner, username, 
+		username, partnerUsername, 
+		partnerUsername, username, 
 		username)
 
 	if err != nil {

@@ -16,14 +16,16 @@ import (
 //
 // Behavior:
 // - Extracts the username from the request context (set by the authentication middleware).
-// - Retrieves the `conversationID` from the route parameters.
+// - Retrieves the `partnerUsername` from the route parameters.
+// - Marks all messages in the conversation as read for the user.
 // - Fetches the conversation details using the database function.
 // - Responds with appropriate HTTP status codes and messages for success or failure.
 //
 // Returns:
 // - 200 OK with the conversation details if the operation succeeds.
-// - 400 Bad Request if the `conversationID` is missing or invalid.
+// - 400 Bad Request if the `partnerUsername` is missing or invalid.
 // - 401 Unauthorized if the username is missing or invalid in the context.
+// - 404 Not Found if the conversation partner does not exist.
 // - 500 Internal Server Error if there is a database error.
 func (rt *_router) showConversation(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Set the response content type to JSON.
@@ -37,16 +39,24 @@ func (rt *_router) showConversation(w http.ResponseWriter, r *http.Request, ps h
 		return
 	}
 
-	// Extract the conversationID from the URL parameters.
-	conversationID := ps.ByName("conversationID")
-	if conversationID == "" {
-		// If the conversationID is missing, respond with 400 Bad Request.
-		http.Error(w, `{"error": "conversationID is required"}`, http.StatusBadRequest)
+	// Extract the partner's username from the URL parameters.
+	partnerUsername := ps.ByName("partner-username")
+	if partnerUsername == "" {
+		// If the partnerUsername is missing, respond with 400 Bad Request.
+		http.Error(w, `{"error": "partner-username is required"}`, http.StatusBadRequest)
+		return
+	}
+
+	// Mark all messages in the conversation as read.
+	err := rt.db.MarkAllMessagesAsRead(username, partnerUsername)
+	if err != nil {
+		// If there is an error updating message status, respond with 500 Internal Server Error.
+		http.Error(w, `{"error": "failed to update message status"}`, http.StatusInternalServerError)
 		return
 	}
 
 	// Fetch the conversation details from the database.
-	conversation, err := rt.db.ShowConversation(username, conversationID)
+	conversation, err := rt.db.ShowConversation(username, partnerUsername)
 	if err != nil {
 		// If there is an error fetching the conversation, respond with 500 Internal Server Error.
 		http.Error(w, `{"error": "failed to fetch conversation: `+err.Error()+`"}`, http.StatusInternalServerError)
