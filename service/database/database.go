@@ -53,7 +53,7 @@ type AppDatabase interface {
 
 	// Conversation Functions
 	ShowConversation(username, conversationPartnerName string) ([]ConversationDetail, error)
-	SendMessage(fromUser, toUser, messageContent string, isPhoto bool, photoURL string) (int, error)
+	SendMessage(msg NewMessage) (int, error)
 	DeleteMessage(partnerUsername string, currentUser string, messageTimestamp time.Time) error
 	MarkAllMessagesAsReceived(partnerUsername string, username string) error
 	MarkAllMessagesAsRead(username string, partnerUsername string) error
@@ -111,6 +111,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 				content TEXT,
 				is_photo BOOLEAN DEFAULT FALSE,
 				photo_url TEXT,
+				is_forwarded BOOLEAN DEFAULT FALSE,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 			);
 		`,

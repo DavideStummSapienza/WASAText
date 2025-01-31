@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
+	"github.com/DavideStummSapienza/WASAText/service/database"
 )
 
 
@@ -79,8 +80,18 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		}
 	}
 
+	// Create the message struct
+	newMessage := database.NewMessage{
+		FromUser:    username,
+		ToUser:      partnerUsername,
+		Content:     request.Message,
+		IsPhoto:     request.IsPhoto,
+		PhotoURL:    request.PhotoURL,
+		IsForwarded: false, // Standardmäßig nicht weitergeleitet
+	}
+
 	// Create the message in the database by calling SendMessage
-	messageID, err := rt.db.SendMessage(username, partnerUsername, request.Message, request.IsPhoto, request.PhotoURL)
+	messageID, err := rt.db.SendMessage(newMessage)
 	if err != nil {
 		// If there is an error sending the message, respond with 500 Internal Server Error.
 		http.Error(w, `{"error": "failed to send message: `+err.Error()+`"}`, http.StatusInternalServerError)
