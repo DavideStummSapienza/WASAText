@@ -3,44 +3,32 @@ package database
 import (
 	"database/sql"
 	"fmt"
-	"time"
 )
 
-// DeleteMessage deletes a specific message from the database.
-//
-// This function identifies a message based on the given partner's username and timestamp.
-// It verifies whether the current user has the permission to delete the message (must be the sender).
-// If the conditions are met, the message is deleted from the `messages` table, and any dependent
-// records are automatically deleted due to the use of `ON DELETE CASCADE` in the database schema.
+// DeleteMessage removes a message from the database if the user has permission to do so.
+// It ensures that only the sender can delete their own messages.
 //
 // Parameters:
-// - partnerUsername: The username of the conversation partner.
-// - currentUser: The username of the current user (the one trying to delete the message).
-// - messageTimestamp: The timestamp of the message to be deleted.
+// - currentUser: The user attempting to delete the message.
+// - messageID: The unique identifier of the message to be deleted.
 //
 // Returns:
-// - An error if the deletion fails or if the user does not have the necessary permissions.
-//
-// Note:
-// - This function uses a SQL transaction to ensure atomicity, rolling back changes if any step fails.
-func (db *appdbimpl) DeleteMessage(partnerUsername string, currentUser string, messageTimestamp time.Time) error {
+// - An error if the deletion fails or if the user does not have permission.
+func (db *appdbimpl) DeleteMessage(currentUser string, messageID int) error {
 	tx, err := db.c.Begin()
 	if err != nil {
 		return fmt.Errorf("failed to start transaction: %w", err)
 	}
 
-	var messageID int
-	var sender string
+	var sender, toUser, toGroup sql.NullString
 
-	// Step 1: Find the message based on partner username and timestamp
+	// Step 1: Retrieve the message and check if the user has permission to delete it
 	err = tx.QueryRow(`
-        SELECT m.id, c.from_user
+        SELECT m.id, c.from_user, c.to_user, c.to_group 
         FROM messages m
         INNER JOIN conversations c ON m.id = c.message_id
-        WHERE c.from_user IN (?, ?)
-          AND c.to_user IN (?, ?)
-          AND m.created_at = ?`,
-		partnerUsername, currentUser, partnerUsername, currentUser, messageTimestamp).Scan(&messageID, &sender)
+        WHERE m.id = ?`,
+		messageID).Scan(&messageID, &sender, &toUser, &toGroup)
 
 	if err != nil {
 		tx.Rollback()
@@ -50,13 +38,13 @@ func (db *appdbimpl) DeleteMessage(partnerUsername string, currentUser string, m
 		return fmt.Errorf("failed to find message: %w", err)
 	}
 
-	// Step 2: Verify permissions
-	if sender != currentUser {
+	// Step 2: Verify that the current user is the sender of the message
+	if sender.String != currentUser {
 		tx.Rollback()
 		return fmt.Errorf("user is not allowed to delete this message")
 	}
 
-	// Step 3: Delete the message (dependencies are automatically handled by CASCADE)
+	// Step 3: Delete the message (cascading delete will handle related records)
 	_, err = tx.Exec(`DELETE FROM messages WHERE id = ?`, messageID)
 	if err != nil {
 		tx.Rollback()

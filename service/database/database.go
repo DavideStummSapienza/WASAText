@@ -34,7 +34,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"time"
 )
 
 // AppDatabase is the high level interface for the DB
@@ -54,14 +53,14 @@ type AppDatabase interface {
 	// Conversation Functions
 	ShowConversation(username, conversationPartnerName string) ([]ConversationDetail, error)
 	SendMessage(msg NewMessage) (int, error)
-	DeleteMessage(partnerUsername string, currentUser string, messageTimestamp time.Time) error
+	DeleteMessage(currentUser string, messageID int) error
 	MarkAllMessagesAsReceived(partnerUsername string, username string) error
 	MarkAllMessagesAsRead(username string, partnerUsername string) error
 	GetMessage(messageID *int, username, partnerUsername string) (*ConversationDetail, error)
 
 
 	// Comment Functions
-	AddComment(messageTimestamp time.Time, partnerUsername string, currentUser string, content string) error
+	AddComment(messageID int, currentUser string, content string) error
 	DeleteComment(messageID int, reactorUsername string) error
 
 	// Group Functions

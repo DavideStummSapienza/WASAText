@@ -9,6 +9,7 @@ import (
 	"github.com/julienschmidt/httprouter"
 )
 
+// Struct for the decoding the Request
 type ForwardMessageRequest struct {
 	RecipientUsername string `json:"recipientUsername"`
 }
