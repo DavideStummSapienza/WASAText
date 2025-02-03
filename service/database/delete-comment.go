@@ -1,29 +1,37 @@
 package database
 
-import "fmt"
+import (
+	"fmt"
+)
 
-// DeleteComment removes a comment from a specific message in the database.
-// It checks if the message exists and if the comment belongs to the specified reactor.
-// If the comment is found and the reactor is authorized to delete it, the comment is removed from the `comments` table.
+// DeleteComment removes a user's comment from a message.
 //
 // Parameters:
 // - messageID: The ID of the message the comment is associated with.
-// - reactorUsername: The username of the user who posted the comment that is to be deleted.
+// - reactorUsername: The username of the user who posted the comment.
 //
 // Returns:
-// - error: If an error occurs during the deletion, such as the comment not being found or a database failure, an error is returned.
+// - error: If the comment is not found or a database error occurs.
 func (db *appdbimpl) DeleteComment(messageID int, reactorUsername string) error {
-	// Execute the DELETE statement to remove the comment where the message_id and reactor_id match
-	_, err := db.c.Exec(`
+	// Execute the DELETE statement
+	res, err := db.c.Exec(`
 		DELETE FROM comments
 		WHERE message_id = ? AND reactor_username = ?;
 	`, messageID, reactorUsername)
 
-	// Handle any errors during the deletion
 	if err != nil {
 		return fmt.Errorf("failed to delete comment: %w", err)
 	}
 
-	// Return nil if the comment was successfully deleted
+	// Check if any rows were affected
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to retrieve affected rows: %w", err)
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("comment not found or user not authorized")
+	}
+
 	return nil
 }

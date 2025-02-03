@@ -70,5 +70,9 @@ func (rt *_router) makeComment(w http.ResponseWriter, r *http.Request, ps httpro
 	// Return success response.
 	response := MakeCommentResponse{Message: "Comment added successfully"}
 	w.WriteHeader(http.StatusCreated)
-	_ = json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Handle any potential error during JSON encoding.
+		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
+		return
+	}
 }
