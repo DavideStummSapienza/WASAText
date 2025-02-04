@@ -49,6 +49,7 @@ type AppDatabase interface {
 	LoadUserConversations(username string) ([]ConversationPreview, error)
 	ChangeUsername(oldUsername, newUsername string) error
 	ChangeProfilePicture(username, newProfilePhotoURL string) error
+	GetGroupByName(groupName string) (*Group, error)
 
 	// Conversation Functions
 	ShowConversation(username, conversationPartnerName string) ([]ConversationDetail, error)

@@ -54,6 +54,18 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
+	// Check if the username is already used as a group name
+	if _, err := rt.db.GetGroupByName(request.Username); err == nil {
+		// A group with this name exists
+		http.Error(w, `{"error": "username cannot be the same as a group name"}`, http.StatusBadRequest)
+		return
+	} else if err.Error() != "group not found" {
+		// Database error
+		http.Error(w, `{"error": "database error"}`, http.StatusInternalServerError)
+		return
+	}
+
+
 	// If the user does not exist, create a new user and return the generated token
 	authToken := generateToken() // Generate a random auth token
 	rt.db.CreateUser(request.Username, "placeholder", authToken)

@@ -1,0 +1,29 @@
+package database
+
+import (
+	"database/sql"
+	"errors"
+)
+
+// Group represents a group in the database.
+type Group struct {
+	Groupname          string `json:"name"`
+	GroupPhotoUrl string `json:"group_photo_uRL"`
+}
+
+// GetGroupByName retrieves a group by its name from the database.
+// Returns: Group struct if found, otherwise an error.
+func (db *appdbimpl) GetGroupByName(groupName string) (*Group, error) {
+	query := "SELECT name, description FROM groups WHERE name = ?"
+	var group Group
+
+	// Execute query and scan result into the group struct
+	err := db.c.QueryRow(query, groupName).Scan(&group.Groupname, &group.GroupPhotoUrl)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("group not found")
+		}
+		return nil, err
+	}
+	return &group, nil
+}
