@@ -26,7 +26,7 @@ type DeleteCommentResponse struct {
 // - 400 Bad Request if the message ID is missing or invalid.
 // - 401 Unauthorized if the user is not authenticated.
 // - 500 Internal Server Error if database operation fails.
-func (rt *_router) deleteComment(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func (rt *_router) deleteComment(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 
 	// 1️. Get authenticated username from the context
@@ -37,7 +37,7 @@ func (rt *_router) deleteComment(w http.ResponseWriter, r *http.Request, _ httpr
 	}
 
 	// 2️. Get message ID from query parameter
-	messageIDStr := r.URL.Query().Get("message-id")
+	messageIDStr := ps.ByName("message-id")
 	if messageIDStr == "" {
 		http.Error(w, `{"error": "missing message-id parameter"}`, http.StatusBadRequest)
 		return
