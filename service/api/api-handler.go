@@ -34,13 +34,11 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.GET("/conversations/:partner-username", rt.wrapWithAuth(rt.showConversation)) 
 	rt.router.POST("/conversations/:partner-username", rt.wrapWithAuth(rt.sendMessage))
 	rt.router.POST("/conversations/:partner-username/messages/:message-id", rt.wrapWithAuth(rt.forwardMessage))
-	// !!!! Reply to existing messages entweder heißt das wie bei whats app das man die so markieren kann
-	// und dann auf sie antwortet oder das man in bestehende chats schreiben kann was ich eher machen würde
-	rt.router.DELETE("/conversations/:partner-username/messages/:message-id", rt.wrapWithAuth(rt.deleteMessage))
+	rt.router.DELETE("/conversations/messages/:message-id", rt.wrapWithAuth(rt.deleteMessage))
 
 	// Comment
-	rt.router.PUT("/conversations/:partner-username/messages/:message-timestamp/comment", rt.wrapWithAuth(rt.makeComment))
-	rt.router.DELETE("/conversations/:partner-username/messages/:message-timestamp/comment", rt.wrapWithAuth(rt.deleteComment))
+	rt.router.PUT("/conversations/messages/:message-id/comment", rt.wrapWithAuth(rt.makeComment))
+	rt.router.DELETE("/conversations/messages/:message-id/comment", rt.wrapWithAuth(rt.deleteComment))
 
 	// Groups
 	rt.router.POST("/groups", rt.wrapWithAuth(rt.addToGroup))
