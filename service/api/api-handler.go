@@ -43,7 +43,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.DELETE("/conversations/:partner-username/messages/:message-timestamp/comment", rt.wrapWithAuth(rt.deleteComment))
 
 	// Groups
-	rt.router.PUT("/groups", rt.wrapWithAuth(rt.addToGroup))
+	rt.router.POST("/groups", rt.wrapWithAuth(rt.addToGroup))
 	rt.router.PUT("/groups/:groupname", rt.wrapWithAuth(rt.changeGroupName))
 	rt.router.DELETE("/groups/:groupname", rt.wrapWithAuth(rt.leaveGroup))
 	rt.router.PUT("/groups/:groupname/group-photo", rt.wrapWithAuth(rt.changeGroupPicture))

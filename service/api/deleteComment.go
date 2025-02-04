@@ -53,12 +53,16 @@ func (rt *_router) deleteComment(w http.ResponseWriter, r *http.Request, _ httpr
 	// 3️. Attempt to delete the comment from the database
 	err = rt.db.DeleteComment(messageID, username)
 	if err != nil {
+		if err.Error() == "comment not found or user not authorized" {
+			http.Error(w, `{"error": "comment not found or unauthorized"}`, http.StatusNotFound)
+			return
+		}
 		http.Error(w, `{"error": "failed to delete comment"}`, http.StatusInternalServerError)
 		return
 	}
 
 	// 4. Return success response.
-	response := MakeCommentResponse{Message: "Comment added successfully"}
+	response := DeleteCommentResponse{Message: "Comment deleted successfully"}
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		// Handle any potential error during JSON encoding.
