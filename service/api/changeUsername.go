@@ -67,6 +67,15 @@ func (rt *_router) changeUsername(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+	_, err = rt.db.GetGroupByName(request.NewUsername)
+	if err == nil {
+		http.Error(w, `{"error": "username cannot be the same as a group name"}`, http.StatusBadRequest)
+		return
+	} else if err.Error() != "group not found" {
+		http.Error(w, `{"error": "database error"}`, http.StatusInternalServerError)
+		return
+	}
+
 	// Attempt to update the username in the database
 	if err := rt.db.ChangeUsername(request.OldUsername, request.NewUsername); err != nil {
 		// If there is a database error while changing the username

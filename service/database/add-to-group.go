@@ -15,9 +15,19 @@ import (
 // Returns:
 // - error: If an error occurs during the process, such as a database failure or permission issue, an error is returned.
 func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUser string) error {
+	
+	// Check if the groupname already exists as a username
+	_, err := db.GetUser(groupname)
+	if err == nil {
+		return fmt.Errorf("group name already exists as a username")
+	} else if err.Error() != "user not found" {
+		return fmt.Errorf("database error while checking username: %w", err)
+	}
+	
+	
 	// Check if the group exists
 	var groupCount int
-	err := db.c.QueryRow(`
+	err = db.c.QueryRow(`
 		SELECT COUNT(*) 
 		FROM groups 
 		WHERE groupname = ?;
