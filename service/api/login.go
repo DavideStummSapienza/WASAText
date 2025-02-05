@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"math/rand"
 	"net/http"
 	"time"
@@ -50,6 +51,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	} else if err.Error() != "user not found" {
 		// If there's a database error, return an internal server error
+		log.Printf("Database error: %v", err)
 		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
@@ -61,6 +63,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	} else if err.Error() != "group not found" {
 		// Database error
+		log.Printf("Database error: %v", err)
 		http.Error(w, `{"error": "database error"}`, http.StatusInternalServerError)
 		return
 	}

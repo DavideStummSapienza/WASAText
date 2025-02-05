@@ -7,14 +7,14 @@ import (
 
 // Group represents a group in the database.
 type Group struct {
-	Groupname          string `json:"name"`
+	Groupname     string `json:"groupname"`
 	GroupPhotoUrl string `json:"group_photo_uRL"`
 }
 
 // GetGroupByName retrieves a group by its name from the database.
 // Returns: Group struct if found, otherwise an error.
 func (db *appdbimpl) GetGroupByName(groupName string) (*Group, error) {
-	query := "SELECT name, description FROM groups WHERE name = ?"
+	query := "SELECT groupname, group_photo_url FROM groups WHERE groupname = ?"
 	var group Group
 
 	// Execute query and scan result into the group struct
