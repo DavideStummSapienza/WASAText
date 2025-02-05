@@ -1,33 +1,55 @@
 <template>
   <div class="login-container">
     <h1>Login</h1>
+    <!-- Input field for the username -->
     <input v-model="username" placeholder="Enter your username" />
+    <!-- Button to trigger the login function -->
     <button @click="login">Login</button>
+    <!-- Display an error message if there is an error -->
     <p v-if="error" class="error">{{ error }}</p>
   </div>
 </template>
 
 <script>
-import axios from "@/services/axios"; // Importiere die Axios-Instanz
+import axios from "@/services/axios"; // Import the Axios instance for making HTTP requests
 
 export default {
+  // Data properties for the component
   data() {
     return {
-      username: "",
-      error: null,
+      username: "", // Stores the username entered by the user
+      error: null, // Stores any error message to be displayed to the user
     };
   },
   methods: {
+    // Login function to handle user login
     async login() {
+      // Check if username is provided
       if (!this.username) {
-        this.error = "Username is required";
+        this.error = "Username is required"; // Set error message if username is missing
         return;
       }
       try {
+        // Make a POST request to the /session endpoint with the username
         await axios.post("/session", { username: this.username });
-        this.$router.push("/chats"); // Nach erfolgreichem Login zur Chatliste weiterleiten
+        // On success, redirect to the chat list page
+        this.$router.push("/chats");
       } catch (err) {
-        this.error = "Login failed. Please try again.";
+        // Error handling for different error types
+        if (err.response) {
+          // Error coming from the backend (API response)
+          if (err.response.data && err.response.data.error) {
+            this.error = err.response.data.error; // Custom error message from the API
+          } else {
+            this.error = "An unexpected error occurred"; // General error message for unknown backend errors
+          }
+        } else if (err.request) {
+          // Error due to network issues (e.g., no response from the server)
+          this.error = "Network error, please try again later.";
+        } else {
+          // Other errors (e.g., misconfigured request or unexpected client-side issues)
+          this.error = "An unexpected error occurred";
+        }
       }
     },
   },
@@ -35,36 +57,41 @@ export default {
 </script>
 
 <style scoped>
+/* Styling for the login container */
 .login-container {
-  max-width: 400px;
-  margin: 100px auto;
-  text-align: center;
+  max-width: 400px; /* Set max width for the container */
+  margin: 100px auto; /* Center the container vertically and horizontally */
+  text-align: center; /* Center text inside the container */
 }
 
+/* Styling for the input field */
 input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  width: 100%; /* Full width input */
+  padding: 10px; /* Padding inside the input */
+  margin: 10px 0; /* Margin above and below the input */
+  border: 1px solid #ccc; /* Light gray border */
+  border-radius: 5px; /* Rounded corners */
 }
 
+/* Styling for the login button */
 button {
-  width: 100%;
-  padding: 10px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
+  width: 100%; /* Full width button */
+  padding: 10px; /* Padding inside the button */
+  background-color: #007bff; /* Blue background */
+  color: white; /* White text */
+  border: none; /* Remove border */
+  border-radius: 5px; /* Rounded corners */
+  cursor: pointer; /* Pointer cursor on hover */
 }
 
+/* Hover effect for the button */
 button:hover {
-  background-color: #0056b3;
+  background-color: #0056b3; /* Darker blue on hover */
 }
 
+/* Styling for error message */
 .error {
-  color: red;
-  margin-top: 10px;
+  color: red; /* Red color for error messages */
+  margin-top: 10px; /* Margin above the error message */
 }
 </style>
