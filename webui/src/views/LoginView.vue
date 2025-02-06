@@ -30,8 +30,13 @@ export default {
         return;
       }
       try {
+        
         // Make a POST request to the /session endpoint with the username
-        await axios.post("/session", { username: this.username });
+        const response = await axios.post("/session", { username: this.username });
+
+        // safe Identifier in sessionStorage
+        sessionStorage.setItem("identifier", response.data.identifier);
+
         // On success, redirect to the chat list page
         this.$router.push("/chats");
       } catch (err) {
