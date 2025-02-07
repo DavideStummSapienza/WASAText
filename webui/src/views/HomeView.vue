@@ -1,56 +1,56 @@
-<script>
-export default {
-	data: function() {
-		return {
-			errormsg: null,
-			loading: false,
-			some_data: null,
-		}
-	},
-	methods: {
-		async refresh() {
-			this.loading = true;
-			this.errormsg = null;
-			try {
-				let response = await this.$axios.get("/");
-				this.some_data = response.data;
-			} catch (e) {
-				this.errormsg = e.toString();
-			}
-			this.loading = false;
-		},
-	},
-	mounted() {
-		this.refresh()
-	}
-}
-</script>
-
 <template>
-	<div>
-		<div
-			class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-			<h1 class="h2">Home page</h1>
-			<div class="btn-toolbar mb-2 mb-md-0">
-				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="refresh">
-						Refresh
-					</button>
-					<button type="button" class="btn btn-sm btn-outline-secondary" @click="exportList">
-						Export
-					</button>
-				</div>
-				<div class="btn-group me-2">
-					<button type="button" class="btn btn-sm btn-outline-primary" @click="newItem">
-						New
-					</button>
-				</div>
-			</div>
-		</div>
+  <div class="home">
+    <h1>Welcome to the WASAText</h1>
 
-		<ErrorMsg v-if="errormsg" :msg="errormsg"></ErrorMsg>
-	</div>
+    <!-- Register and Login Buttons -->
+    <div class="auth-buttons">
+      <button @click="goToLogin" class="auth-button">Login</button>
+      <button @click="goToRegister" class="auth-button">Register</button>
+    </div>
+  </div>
 </template>
 
-<style>
+<script>
+export default {
+  name: 'HomeView',
+  methods: {
+    // Navigate to the Login view
+    goToLogin() {
+      this.$router.push({ name: 'login' });
+    },
+    // Navigate to the Register view
+    goToRegister() {
+      this.$router.push({ name: 'register' });
+    }
+  }
+};
+</script>
+
+<style scoped>
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+
+.auth-buttons {
+  margin-top: 20px;
+}
+
+.auth-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin: 10px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.auth-button:hover {
+  background-color: #0056b3;
+}
 </style>
