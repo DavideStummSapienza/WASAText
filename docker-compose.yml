@@ -1,0 +1,12 @@
+version: '3'
+services:
+backend:
+image: docker.io/davidestummsapienza/backend:latest
+ports:
+- "3000:3000"
+volumes:
+- ./shared:/shared
+frontend:
+image: docker.io/davidestummsapienza/frontend:latest
+ports:
+- "8080:80"
