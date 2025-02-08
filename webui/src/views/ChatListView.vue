@@ -1,71 +1,23 @@
 <template>
-  <div>
-    <h1 class="header">Chat List</h1>
-    
-
-    <!-- Search bar -->
-    <div class="search-bar">
-      <input 
-        type="text" 
-        v-model="searchQuery" 
-        @input="searchUsers" 
-        placeholder="Search for users or groups" 
-      />
+  <div class="chat-list-container">
+    <h1 class="chat-title">Chats</h1>
+    <button class="profile-button">Profile Settings</button>
+    <div class="chat-list">
+      <ChatCard v-for="chat in conversations" :key="chat.id" :chat="chat" />
     </div>
-
-    <!-- Chat List -->
-    <div v-if="conversations.length" class="chat-list">
-      <h2>Your Conversations</h2>
-      <ul>
-        <li v-for="conversation in conversations" :key="conversation.name" class="conversation-item">
-          <div @click="viewConversation(conversation.name)" class="conversation">
-            <img :src="conversation.photo_url" alt="Profile" class="avatar" />
-            <div class="conversation-details">
-              <p class="username">{{ conversation.username }}</p>
-              <p class="last-message">{{ conversation.last_message }}</p>
-              <p class="timestamp">{{ formatTimestamp(conversation.timestamp) }}</p>
-            </div>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- No conversations message -->
-    <div v-else class="no-conversations">
-      <p>No conversations yet</p>
-    </div>
-
-    <!-- Search Results for Users -->
-    <div v-if="searchResults.length" class="search-results">
-      <h2>Search Results</h2>
-      <ul>
-        <li v-for="user in searchResults" :key="user.username">
-          <div @click="startNewConversation(user.username)" class="search-item">
-            <p class="search-username">{{ user.username }}</p>
-          </div>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Button to add new conversation or group -->
-    <button @click="openCreateDialog" class="create-button">+</button>
-
-    <!-- Dialog for creating conversation/group -->
-    <div v-if="showCreateDialog" class="create-dialog">
-      <div class="dialog-actions">
-        <button @click="createConversation">Create Conversation</button>
-        <button @click="createGroup">Create Group</button>
-        <button @click="closeCreateDialog">Cancel</button>
-      </div>
-    </div>
+    <button class="add-chat-button">+</button>
   </div>
 </template>
 
-<script>
 
+<script>
+import ChatCard from "@/components/ChatCard.vue";
 import axios from "@/services/axios";
 
 export default {
+  components: {
+    ChatCard, // Register the component
+  },
   data() {
     return {
       searchQuery: '', // Search query input
@@ -175,134 +127,59 @@ export default {
 </script>
 
 <style scoped>
-/* Basic Styles */
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f9;
-  color: #333;
-  margin: 0;
-  padding: 0;
-}
-
-.header {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 2em;
-}
-
-.description, .no-conversations {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.2em;
-}
-
-.search-bar {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.search-bar input {
-  width: 80%;
-  padding: 10px;
-  font-size: 1em;
-  border-radius: 5px;
-  border: 1px solid #ddd;
-}
-
-.chat-list, .search-results {
-  margin-top: 20px;
-  margin-left: 20px;
-  margin-right: 20px;
-}
-
-.chat-list ul, .search-results ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-.conversation-item {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid #ccc;
-  padding: 10px 0;
-}
-
-.conversation {
-  display: flex;
-  align-items: center;
-}
-
-.avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  margin-right: 15px;
-}
-
-.conversation-details {
+.chat-list-container {
   display: flex;
   flex-direction: column;
-}
-
-.username {
-  font-weight: bold;
-}
-
-.last-message {
-  color: #777;
-}
-
-.timestamp {
-  font-size: 0.8em;
-  color: #aaa;
-}
-
-.search-item {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  cursor: pointer;
-}
-
-.create-button {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  padding: 15px;
-  font-size: 1.5em;
-  background-color: #007BFF;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #65558f;
+  font-family: 'Roboto', sans-serif;
   color: white;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
+  position: relative;
 }
 
-.create-button:hover {
-  background-color: #0056b3;
+.chat-title {
+  font-size: 40px;
+  margin-bottom: 20px;
 }
 
-.create-dialog {
-  position: fixed;
-  bottom: 50px;
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: white;
-  border: 1px solid #ddd;
-  padding: 20px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.dialog-actions button {
+.profile-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: #21005d;
+  color: white;
   padding: 10px 20px;
-  margin: 5px;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 5px;
+  border-radius: 15px;
   cursor: pointer;
+  border: none;
 }
 
-.dialog-actions button:hover {
-  background-color: #218838;
+.chat-list {
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  width: 80%;
+  height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.add-chat-button {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background: #005047;
+  color: white;
+  font-size: 24px;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
 }
 </style>
