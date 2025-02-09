@@ -168,14 +168,14 @@ export default {
 
 .add-chat-button {
   position: absolute;
-  bottom: 20px;
-  right: 20px;
+  bottom: 40px;
+  right: 40px;
   background: #005047;
   color: white;
-  font-size: 24px;
+  font-size: 32px;
   border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;

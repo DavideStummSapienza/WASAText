@@ -44,7 +44,7 @@ export default {
 .profile-card {
   background: white;
   border-radius: 10px;
-  padding: 40px;
+  padding: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
