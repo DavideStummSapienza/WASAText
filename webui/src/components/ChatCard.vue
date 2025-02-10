@@ -1,11 +1,15 @@
 <template>
   <div class="chat-card">
-    <img :src="chat.avatar" alt="Avatar" class="avatar" />
+    <img 
+      :src="chat.photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(chat.name)}&size=40`" 
+      alt="Profile Picture" 
+      class="profile-picture" 
+    />
     <div class="chat-info">
-      <strong>{{ chat.username }}</strong>
-      <p>{{ chat.lastMessage }}</p>
+      <strong>{{ chat.name }}</strong>
+      <p>{{ chat.last_message }}</p>
     </div>
-    <span class="chat-time">{{ chat.timestamp }}</span>
+    <span class="chat-time">{{ formatTime(chat.last_message_time) }}</span>
   </div>
 </template>
 
@@ -13,6 +17,12 @@
 export default {
   props: {
     chat: Object
+  },
+  methods: {
+    formatTime(timestamp) {
+      if (!timestamp) return "";
+      return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    }
   }
 };
 </script>
@@ -28,10 +38,11 @@ export default {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
 }
 
-.avatar {
+.profile-picture {
   width: 40px;
   height: 40px;
   border-radius: 50%;
+  object-fit: cover; /* Stellt sicher, dass das Bild gut aussieht */
   margin-right: 10px;
 }
 

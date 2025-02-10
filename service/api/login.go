@@ -71,7 +71,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	// If the user does not exist, create a new user and return the generated token
 	authToken := generateToken() // Generate a random auth token
-	rt.db.CreateUser(request.Username, "placeholder", authToken)
+	rt.db.CreateUser(request.Username, "", authToken)
 
 	// Respond with the newly created user's auth token
 	response := LoginResponse{Identifier: authToken}

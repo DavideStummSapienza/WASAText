@@ -1,6 +1,10 @@
 <template>
-  <div class="user-card">
-    <span class="user-icon">👤</span>
+  <div class="user-card" @click="passChoosenUser">
+    <img 
+      :src="user.profile_photo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&size=40`" 
+      alt="Profile Picture" 
+      class="profile-picture" 
+    />
     <span class="username">{{ user.username }}</span>
   </div>
 </template>
@@ -9,6 +13,12 @@
 export default {
   props: {
     user: Object,
+  },
+  methods: {
+    goToUserProfile() {
+      // Weiterleitung zur Profil-Seite des Benutzers
+      this.$router.push({ path: '/chat', query: { username: this.user.username } });
+    },
   },
 };
 </script>

@@ -3,7 +3,7 @@
     <h1 class="title">Choose User</h1>
     <input v-model="searchQuery" type="text" placeholder="Search..." class="search-bar" @input="fetchUsers" />
     <div class="user-list">
-      <UserCard v-for="user in filteredUsers" :key="user.id" :user="user" />
+      <UserCard v-for="user in users" :key="user.username" :user="user" />
     </div>
   </div>
 </template>
@@ -22,18 +22,11 @@ export default {
       users: [],
     };
   },
-  computed: {
-    filteredUsers() {
-      return this.users.filter(user =>
-        user.username.toLowerCase().includes(this.searchQuery.toLowerCase())
-      );
-    },
-  },
   methods: {
     async fetchUsers() {
       try {
         const response = await axios.get("/users", {
-          params: { search: this.searchQuery },
+          params: { username: this.searchQuery },
         });
         this.users = response.data;
       } catch (error) {

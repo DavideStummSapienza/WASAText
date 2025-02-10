@@ -3,9 +3,19 @@
     <h1 class="chat-title">Chats</h1>
     <button class="profile-button">Profile Settings</button>
     <div class="chat-list">
-      <ChatCard v-for="chat in conversations" :key="chat.id" :chat="chat" />
+      <ChatCard v-for="chat in conversations" :key="chat.name" :chat="chat" />
     </div>
-    <button class="add-chat-button">+</button>
+    <button class="add-chat-button" @click="openCreatedDialog">+</button>
+
+    <!-- Dialog-Box -->
+    <div v-if="showCreatedDialog" class="dialog-overlay">
+      <div class="dialog-box">
+        <h2>Create New</h2>
+        <button class="dialog-button" @click="createConversation">Start New Conversation</button>
+        <button class="dialog-button" @click="createGroup">Create New Group</button>
+        <button class="dialog-button cancel" @click="closeCreatedDialog">Cancel</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -16,117 +26,65 @@ import axios from "@/services/axios";
 
 export default {
   components: {
-    ChatCard, // Register the component
+    ChatCard,
   },
   data() {
     return {
-      searchQuery: '', // Search query input
-      conversations: [], // List of user conversations
-      searchResults: [], // Search results for users
-      showCreateDialog: false, // Flag for showing the creation dialog
+      conversations: [],
+      showCreatedDialog: false,
+      updateInterval: null,
     };
   },
   methods: {
-    // Fetch user's conversations from the API
     async fetchConversations() {
       try {
         const response = await axios.get("/user-profile");
-        this.conversations = response.data || [];
+        const newConversations = response.data || [];
+
+        // Only reloads if there is new data
+        if (JSON.stringify(this.conversations) !== JSON.stringify(newConversations)) {
+          this.conversations = newConversations;
+        }
       } catch (error) {
-        console.error('Error fetching conversations', error);
+        console.error("Error fetching conversations", error);
         this.conversations = [];
       }
     },
-
-    // Search for users (using the backend API)
-    async searchUsers() {
-      if (!this.searchQuery) {
-        this.searchResults = [];
-        return;
-      }
-
-      try {
-        const response = await axios.get("/users", {
-          params: { username: this.searchQuery }, // Pass the query parameter
-        });
-        this.searchResults = response.data;
-      } catch (error) {
-        console.error('Error searching users', error);
-      }
+    openCreatedDialog() {
+      this.showCreatedDialog = true;
     },
-
-    // Start a new conversation with a user
-    async startNewConversation(username) {
-      try {
-        const response = await axios.post(`/conversations/${username}`, {
-          message: "Hi!", // Default message
-        });
-        this.$router.push({ name: 'conversation', params: { username } });
-      } catch (error) {
-        console.error('Error starting new conversation', error);
-      }
-    },
-
-    // View an existing conversation
-    viewConversation(conversationName) {
-      this.$router.push({ name: 'conversation', params: { username: conversationName } });
-    },
-
-    // Show the dialog to create a new conversation or group
-    openCreateDialog() {
-      this.showCreateDialog = true;
-    },
-
-    // Create a new conversation
     async createConversation() {
-      try {
-        console.log('Creating a new conversation');
-        // Logic to create a new conversation (expand as needed)
-        this.closeCreateDialog();
-      } catch (error) {
-        console.error('Error creating conversation', error);
-      }
+      this.$router.push("/search")
+      //this.closeCreatedDialog();
     },
-
-    // Create a new group
     async createGroup() {
-      try {
-        const groupName = prompt("Enter group name:");
-        const selectedUsers = prompt("Enter usernames of users to add (comma separated):");
-
-        // Prepare the request data
-        const requestData = {
-          groupName: groupName,
-          names: selectedUsers.split(",").map(name => name.trim())
-        };
-
-        // Send a request to add users to the group
-        const response = await axios.post('/groups', requestData);
-        console.log(response.data.message); // Log the success message
-        this.closeCreateDialog();
-      } catch (error) {
-        console.error('Error creating group', error);
-      }
+      this.$router.push("/search")
+      //this.closeCreatedDialog();
     },
-
-    // Close the dialog
-    closeCreateDialog() {
-      this.showCreateDialog = false;
-    },
-
-    // Format timestamp to a readable string
-    formatTimestamp(timestamp) {
-      const date = new Date(timestamp);
-      return date.toLocaleString(); // Formats the timestamp as a local string
+    closeCreatedDialog() {
+      this.showCreatedDialog = false;
     },
   },
   mounted() {
     this.fetchConversations();
+
+    this.updateInterval = setInterval(() => {
+      this.fetchConversations();
+    }, 5000);
+  },
+
+  beforeUnmount() {
+    // Delete the Interval
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+    }
   },
 };
 </script>
 
+
 <style scoped>
+
 .chat-list-container {
   display: flex;
   flex-direction: column;
@@ -181,5 +139,30 @@ export default {
   justify-content: center;
   cursor: pointer;
   border: none;
+}
+
+/* Dialog Box */
+.dialog-box {
+  background: #21005d;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Dialog Buttons */
+.dialog-button {
+  background: #005047;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 24px;
+}
+
+.dialog-button.cancel {
+  background: #b22222;
 }
 </style>

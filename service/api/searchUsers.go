@@ -20,12 +20,6 @@ func (rt *_router) searchUsers(w http.ResponseWriter, r *http.Request, ps httpro
 	// Parse the query parameters from the URL
 	username := r.URL.Query().Get("username") // Get the 'name' query parameter
 
-	if username == "" {
-		// If the 'name' query parameter is empty, respond with an error
-		http.Error(w, `{"error": "username query parameter is required"}`, http.StatusBadRequest)
-		return
-	}
-
 	// Perform the search using the database
 	users, err := rt.db.SearchUser(username)
 	if err != nil {
