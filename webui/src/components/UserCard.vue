@@ -13,11 +13,15 @@
 export default {
   props: {
     user: Object,
+    forGroup: Boolean,
   },
   methods: {
-    goToUserProfile() {
-      // Weiterleitung zur Profil-Seite des Benutzers
-      this.$router.push({ path: '/chat', query: { username: this.user.username } });
+    passChoosenUser() {
+      if(this.forGroup){
+        this.$router.push({ path: '/choose-members', query: { username: this.user.username } });
+      }else{
+        this.$router.push({ path: '/chat', query: { username: this.user.username } });
+      }
     },
   },
 };

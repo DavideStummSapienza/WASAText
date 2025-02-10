@@ -3,7 +3,7 @@
     <h1 class="title">Choose User</h1>
     <input v-model="searchQuery" type="text" placeholder="Search..." class="search-bar" @input="fetchUsers" />
     <div class="user-list">
-      <UserCard v-for="user in users" :key="user.username" :user="user" />
+      <UserCard v-for="user in users" :key="user.username" :user="user" :forGroup="forGroup" />
     </div>
   </div>
 </template>
@@ -20,6 +20,7 @@ export default {
     return {
       searchQuery: "",
       users: [],
+      forGroup: false,
     };
   },
   methods: {
@@ -35,6 +36,7 @@ export default {
     },
   },
   mounted() {
+    this.forGroup = this.$route.query.forGroup === "true"
     this.fetchUsers();
   },
 };

@@ -58,7 +58,7 @@ export default {
       //this.closeCreatedDialog();
     },
     async createGroup() {
-      this.$router.push("/search")
+      this.$router.push("/create-group")
       //this.closeCreatedDialog();
     },
     closeCreatedDialog() {
