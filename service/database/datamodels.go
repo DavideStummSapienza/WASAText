@@ -22,7 +22,7 @@ type ConversationDetail struct {
 	Receiver  		string	  `json:"receiver"`   	 	// Receiver of the message
 	FullyReceived   bool 	  `json:"fully_received"`   // Received-Status of the message
 	FullyRead       bool 	  `json:"fully_read"`       // Read-Status of the message
-	Reactions 	    []string  `json:"reactions"`  		// List of user reactions (comments)
+	Reactions 	    []Reaction  `json:"reactions"`  		// List of user reactions (comments)
 }
 
 // Reaction represents the Reaction on a message in a conversation.

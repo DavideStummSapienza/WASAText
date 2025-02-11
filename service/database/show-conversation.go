@@ -66,12 +66,12 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
 }
 
 // Helper function: Retrieve all reactions for a given message
-func (db *appdbimpl) getReactionsForMessage(messageID int) ([]string, error) {
-	var reactions []string
+func (db *appdbimpl) getReactionsForMessage(messageID int) ([]Reaction, error) {
+	var reactions []Reaction
 
-	// Query to retrieve reactions
+	// Query to retrieve both the reactor's username and content of the reaction
 	rows, err := db.c.Query(`
-        SELECT content
+        SELECT reactor_username, content
         FROM comments
         WHERE message_id = ?`, messageID)
 	if err != nil {
@@ -81,12 +81,18 @@ func (db *appdbimpl) getReactionsForMessage(messageID int) ([]string, error) {
 
 	// Collect all reactions from the result set
 	for rows.Next() {
-		var reaction string
-		if err := rows.Scan(&reaction); err != nil {
+		var reaction Reaction
+		if err := rows.Scan(&reaction.Reactor, &reaction.Content); err != nil {
 			return nil, fmt.Errorf("error scanning reaction: %w", err)
 		}
 		reactions = append(reactions, reaction)
 	}
 
+	// Check for errors while iterating through rows
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating over rows: %w", err)
+	}
+
 	return reactions, nil
 }
+

@@ -45,17 +45,40 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 			tx.Rollback()
 			return 0, fmt.Errorf("failed to fetch group conversation: %w", err)
 		}
+
+		// 4. Insert the new message into the messages table
+		var messageID int
+		err = tx.QueryRow(`
+			INSERT INTO messages (content, is_photo, photo_url, is_forwarded, created_at) 
+			VALUES ( ?, ?, ?, ?, CURRENT_TIMESTAMP) RETURNING id`,
+			msg.Content, msg.IsPhoto, msg.PhotoURL, msg.IsForwarded).Scan(&messageID)
+		if err != nil {
+			tx.Rollback()
+			return 0, fmt.Errorf("failed to insert new message: %w", err)
+		}
 	} else {
-		// 4. Fetch or create a new 1:1 conversation
+		// 5. Fetch or create a new 1:1 conversation
 		err = tx.QueryRow(`
 			SELECT id FROM conversations 
 			WHERE (from_user = ? AND to_user = ?) OR (from_user = ? AND to_user = ?)`,
 			msg.FromUser, msg.ToUser, msg.ToUser, msg.FromUser).Scan(&conversationID)
 
 		if err == sql.ErrNoRows {
+
+			// 5. Insert the new message into the messages table
+			var messageID int
 			err = tx.QueryRow(`
-				INSERT INTO conversations (from_user, to_user) VALUES (?, ?) RETURNING id`,
-				msg.FromUser, msg.ToUser).Scan(&conversationID)
+				INSERT INTO messages (content, is_photo, photo_url, is_forwarded, created_at) 
+				VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP) RETURNING id`,
+				msg.Content, msg.IsPhoto, msg.PhotoURL, msg.IsForwarded).Scan(&messageID)
+			if err != nil {
+				tx.Rollback()
+				return 0, fmt.Errorf("failed to insert new message: %w", err)
+			}
+
+			err = tx.QueryRow(`
+				INSERT INTO conversations (from_user, to_user, message_id) VALUES (?, ?, ?) RETURNING id`,
+				msg.FromUser, msg.ToUser, messageID).Scan(&conversationID)
 			if err != nil {
 				tx.Rollback()
 				return 0, fmt.Errorf("failed to create new conversation: %w", err)
@@ -66,16 +89,7 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 		}
 	}
 
-	// 5. Insert the new message into the messages table
-	var messageID int
-	err = tx.QueryRow(`
-		INSERT INTO messages (conversation_id, sender, content, is_photo, photo_url, is_forwarded, created_at) 
-		VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP) RETURNING id`,
-		conversationID, msg.FromUser, msg.Content, msg.IsPhoto, msg.PhotoURL, msg.IsForwarded).Scan(&messageID)
-	if err != nil {
-		tx.Rollback()
-		return 0, fmt.Errorf("failed to insert new message: %w", err)
-	}
+	
 
 	// 6. Mark message as "unread" for the recipients
 	if isGroup {
