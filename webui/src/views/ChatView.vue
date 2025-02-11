@@ -1,6 +1,6 @@
 <template>
   <div class="chat-view">
-    <h1>Chat</h1>
+    <h1 class="chat-title">{{this.$route.query.username}}</h1>
     <div v-for="msg in messages" :key="msg.message_id">
       <IncomingMessage 
         v-if="msg.sender === this.$route.query.username" 
@@ -45,9 +45,9 @@ export default {
   methods: {
     async fetchMessages() {
       try {
-        const response = await axios.get("/chat", {
-          params: { username: this.$route.query.username },
-        });
+        const partnerUsername = this.$route.query.username;
+        
+        const response = await axios.get(`/conversations/${partnerUsername}`);
         this.messages = response.data;
       } catch (error) {
         console.error("Error fetching messages:", error);
@@ -55,20 +55,30 @@ export default {
     },
     async handleSend(content) {
       try {
+        const partnerUsername = this.$route.query.username;
+        let isPhoto = false;
+        let photoUrl = "";
+
+        // Überprüfen, ob der Inhalt eine URL zu einem Bild ist
+        const urlMatch = content.match(/https?:\/\/.*\.(jpg|jpeg|png|gif|bmp|svg)/i);
+        if (urlMatch) {
+          isPhoto = true;
+          photoUrl = urlMatch[0]; // Die URL extrahieren
+          content = "[Bild]"; // Platzhaltertext, wenn es ein Bild ist
+        }
+
         const newMessage = {
-          fromUser: this.currentUser,
-          toUser: this.$route.query.username,
-          content,
-          is_photo: false,
-          photo_url: "",
-          is_forwarded: false,
+          message: content,
+          is_photo: isPhoto,
+          photo_url: photoUrl, // save Foto-URL 
         };
-        const response = await axios.post("/send-message", newMessage);
-        this.messages.push(response.data); // Direkt hinzufügen
+
+        const response = await axios.post(`/conversations/${partnerUsername}`, newMessage);
+        this.messages.push(response.data); // Direkt zur Chat-Liste hinzufügen
       } catch (error) {
         console.error("Error sending message:", error);
       }
-    }
+    },
   },
   mounted() {
     this.fetchMessages();

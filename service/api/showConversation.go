@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -47,9 +48,12 @@ func (rt *_router) showConversation(w http.ResponseWriter, r *http.Request, ps h
 		return
 	}
 
+	log.Printf("INFO: showConversation called for user: %s, partner: %s", username, partnerUsername)
+
 	// Mark all messages in the conversation as received.
 	err := rt.db.MarkAllMessagesAsReceived(username, partnerUsername)
 	if err != nil {
+		log.Printf("ERROR: Failed to mark messages as received: %v", err)
 		http.Error(w, `{"error": "failed to update message status"}`, http.StatusInternalServerError)
 		return
 	}
@@ -57,14 +61,16 @@ func (rt *_router) showConversation(w http.ResponseWriter, r *http.Request, ps h
 	// Mark all messages in the conversation as read.
 	err = rt.db.MarkAllMessagesAsRead(username, partnerUsername)
 	if err != nil {
+		log.Printf("ERROR: Failed to mark messages as read: %v", err)
 		// If there is an error updating message status, respond with 500 Internal Server Error.
-		http.Error(w, `{"error": "failed to update message status"}`, http.StatusInternalServerError)
+		http.Error(w, `{"error": "failed to update message status "}`, http.StatusInternalServerError)
 		return
 	}
 
 	// Fetch the conversation details from the database.
 	conversation, err := rt.db.ShowConversation(username, partnerUsername)
 	if err != nil {
+		log.Printf("ERROR: Failed to fetch conversation: %v", err)
 		// If there is an error fetching the conversation, respond with 500 Internal Server Error.
 		http.Error(w, `{"error": "failed to fetch conversation: `+err.Error()+`"}`, http.StatusInternalServerError)
 		return
@@ -73,6 +79,7 @@ func (rt *_router) showConversation(w http.ResponseWriter, r *http.Request, ps h
 	// Send a 200 OK response with the conversation details.
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(conversation); err != nil {
+		log.Printf("ERROR: Failed to encode response: %v", err)
 		// Handle any potential error during JSON encoding.
 		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
 		return

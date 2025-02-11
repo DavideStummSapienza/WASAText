@@ -1,6 +1,6 @@
 <template>
   <div class="message-input">
-    <button @click="addImage">📎</button>
+    <button @click="addImage">Send Image</button>
     <input v-model="message" placeholder="Type a message..." />
     <button @click="sendMessage">Send</button>
   </div>
@@ -19,7 +19,13 @@ export default {
     addImage() {
       const url = prompt('Enter image URL:');
       if (url) {
-        this.$emit('send', `<img src='${url}' />`);
+        // Check if valid image URL
+        const urlMatch = url.match(/https?:\/\/\S+\.(jpg|jpeg|png|gif|bmp|svg|webp|tiff|ico|apng|webm|mp4|jpeg)/i);
+        if (urlMatch) {
+          this.$emit('send', url); // Send URL
+        } else {
+          alert('Invalid image URL');
+        }
       }
     }
   }

@@ -12,8 +12,8 @@ import (
 // sendMessageRequest defines the structure of the request payload for sending a message.
 type sendMessageRequest struct {
 	Message   string `json:"message"`    // The message content (text)
-	IsPhoto   bool   `json:"isPhoto"`    // Whether the message is a photo message
-	PhotoURL  string `json:"photoUrl"`   // URL of the photo (if the message is a photo)
+	IsPhoto   bool   `json:"is_photo"`    // Whether the message is a photo message
+	PhotoURL  string `json:"photo_url"`   // URL of the photo (if the message is a photo)
 }
 
 
