@@ -89,6 +89,8 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 		}
 	}
 
+	// WICHTIG ÄNDERN!!!!!!!!!!!!!!!!
+	var messageID int
 	
 
 	// 6. Mark message as "unread" for the recipients
