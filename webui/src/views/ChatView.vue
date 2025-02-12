@@ -39,7 +39,7 @@ export default {
   data() {
     return {
       messages: [],
-      currentUser: "currentUser" // TODO: Hier den aktuellen Nutzer setzen
+      currentUser: "currentUser" // TODO: set current user maybe not needed tho
     };
   },
   methods: {
