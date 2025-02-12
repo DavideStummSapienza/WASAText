@@ -71,30 +71,48 @@ components:
         maxLength: 16
         example: Maria
         
-    MessageTimestamp:
-      name: message-timestamp
+    MessageID:
+      name: message-id
       in: path
       required: true
       schema:
-        description: "message-timestamp"
-        type: string
-        pattern: '^[A-Za-z0-9 ]+$'
-        minLength: 1
-        maxLength: 255
-        format: date-time
-        example: "2023-01-01T23:45:00Z"
+        description: "Id of the message"
+        type: integer
+        format: int64
+        example: 123456
+
   schemas:
     MessageResponse:
       description: "How a Message Response should look like"
       type: object
       properties:
-        message:
+        message_id:
+          description: "message id"
+          type: integer
+          format: int64
+          example: 12345
+        content:
           description: "Content of message"
           type: string
           pattern: '^[A-Za-z0-9 ]+$'
           minLength: 1
           maxLength: 255
           example: "Hello"
+        is_photo:
+          description: "flag if content is a photo"
+          type: boolean
+          example: false
+        photo_url:
+          description: "URL to the image, if an image was send"
+          type: string
+          pattern: '^[A-Za-z0-9 ]+$'
+          minLength: 1
+          maxLength: 255
+          example: "https://example.com/toblerone.png"
+        is_forwarded:
+          description: "flag if message was forwarded"
+          type: boolean
+          example: false
         timestamp:
           type: string
           pattern: '^[A-Za-z0-9 ]+$'
@@ -102,7 +120,7 @@ components:
           maxLength: 255
           format: date-time
           example: "2023-01-01T23:45:00Z"
-        sendersUsername:
+        sender:
           description: |
             Sender's Username. Null if not needed.
           type: string
@@ -110,22 +128,43 @@ components:
           minLength: 1
           maxLength: 255
           example: "Bob"
-          
-        receivedCheckmark:
-          description: "URL to the 'received' checkmark image. Null if not needed."
+        receiver:
+          description: |
+            Receiver's Username. Null if not needed.
           type: string
           pattern: '^[A-Za-z0-9 ]+$'
           minLength: 1
           maxLength: 255
-          example: "https://example.com/checkmark-received.png"
+          example: "Billy"
           
-        readCheckmark:
-          description: "URL to the 'read' checkmark image. Null if not needed."
-          type: string
-          pattern: '^[A-Za-z0-9 ]+$'
-          minLength: 1
-          maxLength: 255
-          example: "https://example.com/checkmark-read.png"
+        fully_received:
+          description: "flag if message was received"
+          type: boolean
+          example: false
+          
+        fully_read:
+          description: "flag if message was received"
+          type: boolean
+          example: false
+          
+        reactions:
+          type: object
+          description: "the reactions on a message"
+          properties:
+            reactor:
+              description: "Username of reactor"
+              type: string
+              pattern: '^[A-Za-z0-9 ]+$'
+              minLength: 1
+              maxLength: 255
+              example: "Bruno"
+            content:
+              description: "Reaction like a smile"
+              type: string
+              pattern: '^[A-Za-z0-9 ]+$'
+              minLength: 1
+              maxLength: 255
+              example: ":)"
           
           
 security:
@@ -196,7 +235,7 @@ paths:
         Allows the user to search for other WASAText users by username or part of a username.
       operationId: searchUser
       parameters:
-        - name: name
+        - name: username
           in: query
           required: false
           description: A partial or full username to search for
@@ -229,6 +268,11 @@ paths:
                       minLength: 1
                       maxLength: 255
                       example: "https://example.com/photo.jpg"
+                    auth_token:
+                      type: integer
+                      format: int64
+                      example: |
+                        null, because just reuse of type struct 
                 minItems: 0
                 maxItems: 500
         "401":
@@ -261,9 +305,15 @@ paths:
           content:
             application/json:
               schema:
-                description: "Returns the NewUsername"
+                description: "Returns the NewUsername and a Successmessage"
                 type: object
                 properties:
+                  message:
+                    type: string
+                    pattern: '^[A-Za-z0-9 ]+$'
+                    minLength: 1
+                    maxLength: 255
+                    example: username successfully changed
                   newName:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
@@ -311,39 +361,35 @@ paths:
                 items:
                   type: object
                   properties:
-                    convoName:
+                    name:
                       type: string
                       example: |
                         John or WASAGroup
                       pattern: "^.*?$"
                       minLength: 3
                       maxLength: 16
-                    profilePicture:
+                    photo_url:
                       type: string
                       pattern: '^[A-Za-z0-9 ]+$'
                       minLength: 1
                       maxLength: 255
                       example: |
                         https://www.images.com/images/{image}
-                    time:
-                      type: string
-                      pattern: '^[A-Za-z0-9 ]+$'
-                      minLength: 1
-                      maxLength: 255
-                      example: 21:56
-                    date:
-                      type: string
-                      pattern: '^[A-Za-z0-9 ]+$'
-                      minLength: 1
-                      maxLength: 255
-                      example: 23.10.2024
-                    messageContent:
+                    last_message:
                       type: string
                       pattern: '^[A-Za-z0-9 ]+$'
                       minLength: 1
                       maxLength: 255
                       example: |
                         Hello or Imageresource
+                    last_message_time:
+                      type: string
+                      pattern: '^[A-Za-z0-9 ]+$'
+                      minLength: 1
+                      maxLength: 255
+                      format: date-time
+                      example: "2023-01-01T23:45:00Z"
+                    
         "401":
           $ref: "#/components/responses/UnauthorizedError"
   /profile-picture:
@@ -362,7 +408,7 @@ paths:
               description: "New Profile Picture URL"
               type: object
               properties:
-                newPicture:
+                photo_url:
                   type: string
                   pattern: '^[A-Za-z0-9 ]+$'
                   minLength: 1
@@ -377,7 +423,15 @@ paths:
                 description: "New Profile Picture URL"
                 type: object
                 properties:
-                  success:
+                  message:
+                    description: "Successmessage"
+                    type: string
+                    pattern: '^[A-Za-z0-9 ]+$'
+                    minLength: 1
+                    maxLength: 255
+                    example: | 
+                      profile picture successfully updated
+                  photo_url:
                     description: "URL to of new Profile Picture."
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
@@ -448,12 +502,12 @@ paths:
                   maxLength: 255
                   example: "Hello, how are you?"
                   
-                isPhoto:
+                is_photo:
                   description: "Indicates whether the message is a photo or not."
                   type: boolean
                   example: false
                   
-                photoUrl:
+                photo_url:
                   description: "The URL of the photo if the message is a photo."
                   type: string
                   pattern: '^[A-Za-z0-9 ]+$'
@@ -478,10 +532,10 @@ paths:
           $ref: "#/components/responses/PartnerUsernameNotFound"
         "401":
           $ref: "#/components/responses/UnauthorizedError"
-  /conversations/{partner-username}/messages/{message-timestamp}:
+  /conversations/{partner-username}/messages/{message-id}:
     parameters:
         - $ref: "#/components/parameters/PartnerUsername"
-        - $ref: "#/components/parameters/MessageTimestamp"
+        - $ref: "#/components/parameters/MessageID"
     post:
       tags: 
         - Conversation
@@ -527,8 +581,10 @@ paths:
         "401":
           $ref: "#/components/responses/UnauthorizedError"
   
-      
-
+  /conversations/messages/{message-id}:
+    parameters:
+        - $ref: "#/components/parameters/MessageID"
+    
     delete:
         tags: 
           - Conversation
@@ -538,31 +594,36 @@ paths:
         responses:
           "200":
             description: |
-              Message deleted, returns conversation without deletet message.
+              Deletes a specific message by ID. The authenticated user must have permission to delete the message.
             content:
               application/json:
                 schema:
-                  description: "Response a Conversationelement"
-                  type: array
-                  minItems: 1
-                  maxItems: 1000
-                  items:
-                    $ref: "#/components/schemas/MessageResponse"
+                  description: "Message successfully deleted."
+                  type: object
+                  properties:
+                    message:
+                      description: |
+                        Succsessmessage
+                      type: string
+                      pattern: '^[A-Za-z0-9 ]+$'
+                      minLength: 1
+                      maxLength: 255
+                      example: "Message deleted successfully"
           "404":
             $ref: "#/components/responses/PartnerOrMessageNotFound"
           "401":
             $ref: "#/components/responses/UnauthorizedError"
-  /conversations/{partner-username}/messages/{message-timestamp}/comment:
+            
+  /conversations/messages/{message-id}/comment:
     parameters:
-        - $ref: "#/components/parameters/PartnerUsername"
-        - $ref: "#/components/parameters/MessageTimestamp"
+        - $ref: "#/components/parameters/MessageID"
     put:
       tags:
         - Comment
-      summary: make a comment
+      summary: Add a comment to a message
       operationId: commentMessage
       description: |
-        user comments on a certain message
+        User comments on a specific message.
       requestBody:
         description: comment from user on message
         content:
@@ -571,29 +632,32 @@ paths:
               description: "Commentelement"
               type: object
               properties:
-                name:
+                content:
                   description: |
-                    URL to emoticon for the comment
+                    emoticon for the comment
                   type: string
                   pattern: '^[A-Za-z0-9 ]+$'
                   minLength: 1
                   maxLength: 255
-                  example: "https://example.com/checkmark-received.png"
+                  example: ":)"
                   
         required: true  
       responses:
         "200":
-          description: |
-            successesfully commented on the message, returns conversation with commented message
+          description: Comment added successfully.
           content:
             application/json:
               schema:
-                description: "Responses a Conversationelement"
-                type: array
-                minItems: 1
-                maxItems: 1000
-                items:
-                  $ref: "#/components/schemas/MessageResponse"
+                description: "Returns successmessage"
+                type: object
+                properties:
+                  message:
+                    description: "successmessage"
+                    type: string
+                    pattern: '^[A-Za-z0-9 ]+$'
+                    minLength: 1
+                    maxLength: 255
+                    example: "Comment added successfully"
         "404":
           $ref: "#/components/responses/PartnerOrMessageNotFound"
         "401":
@@ -611,18 +675,22 @@ paths:
             content:
               application/json:
                 schema:
-                  description: "Returns a Conversationelement"
-                  type: array
-                  minItems: 1
-                  maxItems: 1000
-                  items:
-                    $ref: "#/components/schemas/MessageResponse"
+                  description: "Returns successmessage"
+                  type: object
+                  properties:
+                    message:
+                      description: "successmessage"
+                      type: string
+                      pattern: '^[A-Za-z0-9 ]+$'
+                      minLength: 1
+                      maxLength: 255
+                      example: "Comment deleted successfully"
           "404":
             $ref: "#/components/responses/PartnerOrMessageNotFound"
           "401":
             $ref: "#/components/responses/UnauthorizedError"
   /groups:
-    put:
+    post:
       tags: 
         - Groups
       summary: adds a user to a group
@@ -648,40 +716,21 @@ paths:
                   example: "WASAGroup"
                   
                 names:
+                  description: "List of usernames to be added to the group"
                   type: array
                   minItems: 1
                   maxItems: 100
                   items:
-                    type: object
-                    properties:
-                      username:
-                        description: |
-                          name of the user which should be added
-                        type: string
-                        pattern: '^[A-Za-z0-9 ]+$'
-                        minLength: 3
-                        maxLength: 16
-                        example: "Harry"
+                    type: string
+                    pattern: '^[A-Za-z0-9 ]+$'
+                    minLength: 3
+                    maxLength: 16
+                    example: "Harry"
+
                         
         required: true
       responses:
-        "201":
-          description: |
-            Group successfully created!
-          content:
-            application/json:
-              schema:
-                description: "Successmessage"
-                type: object
-                properties:
-                  created:
-                    type: string
-                    pattern: '^[A-Za-z0-9 ]+$'
-                    minLength: 1
-                    maxLength: 255
-                    example: "Group successfully created!" 
-              
-              
+      
         "200":
           description: |
             users successfully added!
@@ -691,13 +740,13 @@ paths:
                 description: "Successmessage"
                 type: object
                 properties:
-                  added:
+                  message:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
                     minLength: 1
                     maxLength: 255
-                    example: "Users successfully added!"
-            
+                    example: |
+                      Users successfully added to group and group created if didnt existed
         "404":
           $ref: "#/components/responses/PartnerUsernameNotFound"
         "401":
@@ -731,7 +780,7 @@ paths:
               description: "New Groupname"
               type: object
               properties:
-                groupName:
+                newGroupName:
                   description: |
                     new group name
                   type: string
@@ -751,12 +800,12 @@ paths:
                 description: "Succsessmessage"
                 type: object
                 properties:
-                  created:
+                  message:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
                     minLength: 1
                     maxLength: 255
-                    example: "Groupname successfully changed!"
+                    example: "Group name successfully changed"
         "404":
           description: |
             group not found!
@@ -766,7 +815,7 @@ paths:
                 description: "Errormessage"
                 type: object
                 properties:
-                  created:
+                  error:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
                     minLength: 1
@@ -791,12 +840,12 @@ paths:
                 description: "Successmessage"
                 type: object
                 properties:
-                  created:
+                  message:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
                     minLength: 1
                     maxLength: 255
-                    example: "Left group successfully!"
+                    example: "Successfully left the group"
         "404":
           description: |
             group not found!
@@ -806,7 +855,7 @@ paths:
                 description: "Errormessage"
                 type: object
                 properties:
-                  created:
+                  error:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
                     minLength: 1
@@ -843,7 +892,7 @@ paths:
               description: "New Group Photo URL"
               type: object
               properties:
-                groupName:
+                newPhotoURL:
                   description: |
                     new group photo
                   type: string
@@ -856,20 +905,19 @@ paths:
       responses:
         "200":
           description: |
-            group photo successfully changed!
+            user changed group photo successfully!
           content:
             application/json:
               schema:
-                description: "New Photo URL"
+                description: "Successmessage"
                 type: object
                 properties:
-                  receivedCheckmark:
-                    description: "URL of the new profile picture."
+                  message:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
                     minLength: 1
                     maxLength: 255
-                    example: "https://example.com/new-group-picture.png"
+                    example: "Group picture successfully updated"
                     
         "404":
           description: |
@@ -880,7 +928,7 @@ paths:
                 description: "Errormessage"
                 type: object
                 properties:
-                  created:
+                  error:
                     type: string
                     pattern: '^[A-Za-z0-9 ]+$'
                     minLength: 1

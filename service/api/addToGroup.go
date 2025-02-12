@@ -59,7 +59,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 	}
 
 	// Send success response
-	response := AddToGroupResponse{Message: "Users successfully added to group"}
+	response := AddToGroupResponse{Message: "Users successfully added to group and group created if didnt existed"}
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		// Handle any potential error during JSON encoding.

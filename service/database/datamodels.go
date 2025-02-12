@@ -41,3 +41,10 @@ type NewMessage struct {
     PhotoURL    string
     IsForwarded bool
 }
+
+// User represents a user in the database.
+type User struct {
+	Username        string `json:"username"`
+	ProfilePhotoURL string `json:"profile_photo_url"`
+	AuthToken       int    `json:"auth_token"`
+}

@@ -101,8 +101,7 @@ func New(db *sql.DB) (AppDatabase, error) {
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				from_user TEXT REFERENCES users(username) ON DELETE CASCADE,
 				to_user TEXT REFERENCES users(username) ON DELETE CASCADE,
-				to_group TEXT REFERENCES groups(groupname) ON DELETE CASCADE,
-				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE
+				to_group TEXT REFERENCES groups(groupname) ON DELETE CASCADE
 			);
 		`,
 		"messages": `
@@ -112,7 +111,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 				is_photo BOOLEAN DEFAULT FALSE,
 				photo_url TEXT,
 				is_forwarded BOOLEAN DEFAULT FALSE,
-				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+				conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE
 			);
 		`,
 		"message_status": `

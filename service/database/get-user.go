@@ -5,13 +5,6 @@ import (
 	"errors"
 )
 
-// User represents a user in the database.
-type User struct {
-	Username        string `json:"username"`
-	ProfilePhotoURL string `json:"profile_photo_url"`
-	AuthToken       int    `json:"auth_token"`
-}
-
 // GetUser retrieves a user's details by their username.
 // RETURNS: User struct if found, otherwise an error.
 func (db *appdbimpl) GetUser(username string) (*User, error) {

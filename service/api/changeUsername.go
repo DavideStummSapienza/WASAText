@@ -9,7 +9,6 @@ import (
 
 // ChangeUsernameRequest defines the structure of the request payload for changing a username.
 type ChangeUsernameRequest struct {
-	OldUsername string `json:"oldusername"` // The current username of the user
 	NewUsername string `json:"newusername"` // The desired new username
 }
 
@@ -40,6 +39,14 @@ type ChangeUsernameResponse struct {
 func (rt *_router) changeUsername(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Set the content type of the response to JSON
 	w.Header().Set("content-type", "application/json")
+
+	// Extract the username from the request context.
+	oldUsername, ok := r.Context().Value(usernameKey).(string)
+	if !ok || oldUsername == "" {
+		// If the username is missing or invalid, respond with 401 Unauthorized.
+		http.Error(w, `{"error": "unauthorized"}`, http.StatusUnauthorized)
+		return
+	}
 
 	var request ChangeUsernameRequest
 
@@ -77,7 +84,7 @@ func (rt *_router) changeUsername(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Attempt to update the username in the database
-	if err := rt.db.ChangeUsername(request.OldUsername, request.NewUsername); err != nil {
+	if err := rt.db.ChangeUsername(oldUsername, request.NewUsername); err != nil {
 		// If there is a database error while changing the username
 		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
