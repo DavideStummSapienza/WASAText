@@ -36,7 +36,7 @@ func (db *appdbimpl) GetMessage(messageID *int, username, partnerUsername string
             (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
             (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
         FROM messages m
-        JOIN conversations c ON m.id = c.message_id
+        JOIN conversations c ON m.conversation_id = c.id
         WHERE m.id = ?`, *messageID).Scan(
 			&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.IsForwarded, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead)
 	} else {
@@ -53,15 +53,10 @@ func (db *appdbimpl) GetMessage(messageID *int, username, partnerUsername string
             (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
             (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
         FROM messages m
-        JOIN conversations c ON m.id = c.message_id
-        WHERE m.id IN (
-            SELECT message_id
-            FROM conversations
-            WHERE 
-                (from_user = ? AND to_user = ?) 
-                OR (from_user = ? AND to_user = ?) 
-                OR to_group = ?
-        )
+        JOIN conversations c ON m.conversation_id = c.id
+        WHERE (c.from_user = ? AND c.to_user = ?) 
+           OR (c.from_user = ? AND c.to_user = ?) 
+           OR c.to_group = ?
         ORDER BY m.created_at DESC
         LIMIT 1`, username, partnerUsername, partnerUsername, username, partnerUsername).Scan(
 			&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.IsForwarded, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead)

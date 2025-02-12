@@ -39,6 +39,12 @@ func (db *appdbimpl) ChangeUsername(oldUsername, newUsername string) error {
 		return fmt.Errorf("failed to update username in message_status: %w", err)
 	}
 
+	// Update the username in the group_members table for all the groups the user is a member of
+	_, err = tx.Exec("UPDATE group_members SET membername = ? WHERE membername = ?", newUsername, oldUsername)
+	if err != nil {
+		return fmt.Errorf("failed to update username in group_members: %w", err)
+	}
+
 	// Commit the transaction
 	err = tx.Commit()
 	if err != nil {

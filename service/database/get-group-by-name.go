@@ -5,12 +5,6 @@ import (
 	"errors"
 )
 
-// Group represents a group in the database.
-type Group struct {
-	Groupname     string `json:"groupname"`
-	GroupPhotoUrl string `json:"group_photo_uRL"`
-}
-
 // GetGroupByName retrieves a group by its name from the database.
 // Returns: Group struct if found, otherwise an error.
 func (db *appdbimpl) GetGroupByName(groupName string) (*Group, error) {

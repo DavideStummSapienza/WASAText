@@ -48,3 +48,9 @@ type User struct {
 	ProfilePhotoURL string `json:"profile_photo_url"`
 	AuthToken       int    `json:"auth_token"`
 }
+
+// Group represents a group in the database.
+type Group struct {
+	Groupname     string `json:"groupname"`
+	GroupPhotoUrl string `json:"group_photo_uRL"`
+}

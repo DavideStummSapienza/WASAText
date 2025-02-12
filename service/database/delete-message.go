@@ -20,15 +20,15 @@ func (db *appdbimpl) DeleteMessage(currentUser string, messageID int) error {
 		return fmt.Errorf("failed to start transaction: %w", err)
 	}
 
-	var sender, toUser, toGroup sql.NullString
+	var sender sql.NullString
 
 	// Step 1: Retrieve the message and check if the user has permission to delete it
 	err = tx.QueryRow(`
-        SELECT m.id, c.from_user, c.to_user, c.to_group 
+        SELECT m.id, c.from_user
         FROM messages m
-        INNER JOIN conversations c ON m.id = c.message_id
+        INNER JOIN conversations c ON m.conversation_id = c.id
         WHERE m.id = ?`,
-		messageID).Scan(&messageID, &sender, &toUser, &toGroup)
+		messageID).Scan(&messageID, &sender)
 
 	if err != nil {
 		tx.Rollback()

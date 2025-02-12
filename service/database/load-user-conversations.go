@@ -14,7 +14,7 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 			ELSE u.profile_photo_url
 		END AS photo_url,
 		CASE
-			WHEN m.is_photo THEN '📷 Photo'
+			WHEN m.is_photo THEN 'Photo'
 			ELSE m.content
 		END AS last_message,
 		m.created_at AS last_message_time
@@ -25,7 +25,7 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 		FROM 
 			conversations c
 		JOIN 
-			messages m ON c.message_id = m.id
+			messages m ON c.id = m.conversation_id
 		WHERE 
 			c.from_user = ? OR c.to_user = ?
 		GROUP BY 
@@ -34,7 +34,7 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 	JOIN conversations c ON c.id = latest_conversations.conversation_id
 	LEFT JOIN users u ON (u.username = c.to_user OR u.username = c.from_user)
 	LEFT JOIN groups g ON g.groupname = c.to_group
-	JOIN messages m ON m.created_at = latest_conversations.latest_message_time
+	JOIN messages m ON m.conversation_id = c.id AND m.created_at = latest_conversations.latest_message_time
 	ORDER BY 
 		latest_conversations.latest_message_time DESC;
 	`

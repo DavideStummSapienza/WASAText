@@ -36,18 +36,25 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 			return 0, fmt.Errorf("user %s is not a member of group %s", msg.FromUser, msg.ToUser)
 		}
 
-		// 3. Fetch the existing group conversation (do NOT create a new one)
+		// 3. Check if a conversation for the group already exists
 		err = tx.QueryRow(`SELECT id FROM conversations WHERE to_group = ?`, msg.ToUser).Scan(&conversationID)
+    
 		if err == sql.ErrNoRows {
-			tx.Rollback()
-			return 0, fmt.Errorf("group conversation does not exist for group: %s", msg.ToUser)
+			// No existing conversation, create a new one
+			err = tx.QueryRow(`
+				INSERT INTO conversations (from_user, to_group) 
+				VALUES (?, ?) RETURNING id`, msg.FromUser, msg.ToUser).Scan(&conversationID)
+			if err != nil {
+				tx.Rollback()
+				return 0, fmt.Errorf("failed to create new group conversation: %w", err)
+			}
 		} else if err != nil {
 			tx.Rollback()
 			return 0, fmt.Errorf("failed to fetch group conversation: %w", err)
 		}
 
 	} else {
-		// 5. Fetch or create a new 1:1 conversation
+		// 4. Fetch or create a new 1:1 conversation
 		err = tx.QueryRow(`
 			SELECT id FROM conversations 
 			WHERE from_user = ? AND to_user = ?`,
