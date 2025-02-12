@@ -2,7 +2,7 @@
   <div class="profile-settings">
     <h1 class="profile-title">Profile</h1>
     <div class="profile-card">
-      <img class="profile-avatar" alt="User Avatar" src="/profile-avatar.png" />
+      <img class="profile-avatar" alt="User Avatar" src="https://ui-avatars.com/api/?name=empty&size=40" />
       <input type="text" class="profile-name" v-model="username" />
       <div class="button-group">
         <button class="save-button">Save</button>

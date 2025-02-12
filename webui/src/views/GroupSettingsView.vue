@@ -2,7 +2,7 @@
   <div class="group-settings">
     <h1 class="group-settings-title">Group Settings</h1>
     <div class="group-settings-card">
-      <img class="group-photo" alt="User Avatar" src="/profile-avatar.png" />
+      <img class="group-photo" alt="User Avatar" src="https://ui-avatars.com/api/?name=empty&size=40" />
       <input type="text" class="group-name" v-model="groupname" />
       <div class="button-group">
         <button class="save-button">Save</button>
