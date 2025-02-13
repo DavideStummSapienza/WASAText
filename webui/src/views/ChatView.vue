@@ -74,7 +74,12 @@ export default {
         };
 
         const response = await axios.post(`/conversations/${partnerUsername}`, newMessage);
-        this.messages.push(response.data); // Direkt zur Chat-Liste hinzufügen
+        if (!this.messages) {
+          this.messages = [];
+        }
+    
+        this.messages.push(response.data);
+        
       } catch (error) {
         console.error("Error sending message:", error);
       }
