@@ -25,6 +25,7 @@ export default {
       // Hier kannst du die Logik für das Erstellen der Gruppe hinzufügen
       console.log('Groupname:', this.groupname);
       console.log('Photo URL:', this.photoURL);
+      this.$router.push("/choose-members")
     }
   }
 };

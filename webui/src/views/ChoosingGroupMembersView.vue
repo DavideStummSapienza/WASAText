@@ -24,10 +24,11 @@ export default {
   },
   methods: {
     navigateToSearch() {
-      this.$router.push({ name: "search", query: { from: "group" } });
+      this.$router.push("/search");
     },
     createGroup() {
       console.log("Creating group with members:", this.selectedUsers);
+      this.$router.push("/chats")
       // Hier würdest du eine API-Anfrage zum Erstellen der Gruppe senden
     },
   },

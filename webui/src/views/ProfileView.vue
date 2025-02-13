@@ -2,23 +2,67 @@
   <div class="profile-settings">
     <h1 class="profile-title">Profile</h1>
     <div class="profile-card">
-      <img class="profile-avatar" alt="User Avatar" src="https://ui-avatars.com/api/?name=empty&size=40" />
-      <input type="text" class="profile-name" v-model="username" />
+      <!-- Profilbild -->
+      <img class="profile-avatar" :src="profilePhotoURL" alt="User Avatar" />
+      <input type="text" class="profile-name" v-model="username" placeholder="Enter username" />
       <div class="button-group">
-        <button class="save-button">Save</button>
-        <button class="delete-button">Delete Account</button>
+        <!-- Speichern Button -->
+        <button class="save-button" @click="saveProfile">Save</button>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios'; // Wir verwenden axios für API-Anfragen
+
 export default {
   data() {
     return {
-      username: 'Tom'
+      username: 'Tom', // Der aktuelle Benutzername
+      profilePhotoURL: 'https://ui-avatars.com/api/?name=Tom&size=100', // Das Profilbild-URL (Initialwert)
     };
-  }
+  },
+  methods: {
+    // Methode, um den Benutzernamen zu speichern
+    async saveProfile() {
+      try {
+        // API-Aufruf zum Ändern des Benutzernamens
+        const response = await axios.put('/user-profile', {
+          newusername: this.username,
+        });
+
+        if (response.data.message === 'username successfully changed') {
+          alert('Username updated successfully!');
+        }
+      } catch (error) {
+        console.error('Error saving profile:', error);
+        alert('Failed to save profile.');
+      }
+    },
+
+    // Methode, um das Profilbild zu ändern
+    async changeProfilePicture(newPhotoURL) {
+      try {
+        // API-Aufruf zum Ändern des Profilbildes
+        const response = await axios.put('/profile-picture', {
+          photo_url: newPhotoURL,
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('authToken')}` // Authentifizierungs-Token
+          }
+        });
+
+        if (response.data.message === 'profile picture successfully updated') {
+          this.profilePhotoURL = newPhotoURL; // Profilbild im Frontend aktualisieren
+          alert('Profile picture updated!');
+        }
+      } catch (error) {
+        console.error('Error changing profile picture:', error);
+        alert('Failed to update profile picture.');
+      }
+    },
+  },
 };
 </script>
 
@@ -83,11 +127,6 @@ button {
 
 .save-button {
   background-color: #21005d;
-  color: white;
-}
-
-.delete-button {
-  background-color: red;
   color: white;
 }
 </style>

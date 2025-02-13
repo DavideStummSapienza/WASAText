@@ -1,7 +1,7 @@
 <template>
   <div class="chat-list-container">
     <h1 class="chat-title">Chats</h1>
-    <button class="profile-button">Profile Settings</button>
+    <button class="profile-button" @click="goToProfile">Profile Settings</button>
     <div class="chat-list">
       <ChatCard v-for="chat in conversations" :key="chat.name" :chat="chat" />
     </div>
@@ -49,6 +49,10 @@ export default {
         console.error("Error fetching conversations", error);
         this.conversations = [];
       }
+    },
+    async goToProfile() {
+      this.$router.push("/profile")
+      //this.closeCreatedDialog();
     },
     openCreatedDialog() {
       this.showCreatedDialog = true;
