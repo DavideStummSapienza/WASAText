@@ -74,7 +74,7 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 		}
 	}
 
-	// Insert new message 
+	// 5. Insert new message 
 	var messageID int
 	err = tx.QueryRow(`
 		INSERT INTO messages (content, is_photo, photo_url, is_forwarded, created_at, conversation_id) 

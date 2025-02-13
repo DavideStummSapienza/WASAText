@@ -10,7 +10,7 @@ func (db *appdbimpl) MarkAllMessagesAsReceived(partnerUsername string, username 
 		WHERE message_id IN (
 			SELECT m.id
 			FROM messages m
-			JOIN conversations c ON m.id = c.message_id
+			JOIN conversations c ON m.conversation_id = c.id
 			WHERE 
 				(c.to_user = ? AND c.from_user = ?) OR
 				(c.to_group = ? AND ? IN (SELECT membername FROM group_members WHERE groupname = c.to_group))

@@ -5,42 +5,43 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 	// SQL query to retrieve the required data for the conversation preview
 	query := `
 	SELECT 
-		CASE
+		CASE 
 			WHEN c.to_group IS NOT NULL THEN g.groupname
-			ELSE u.username
+			ELSE 
+				CASE 
+					WHEN c.from_user = ? THEN c.to_user 
+					ELSE c.from_user 
+				END
 		END AS name,
-		CASE
+		CASE 
 			WHEN c.to_group IS NOT NULL THEN g.group_photo_url
-			ELSE u.profile_photo_url
+			ELSE 
+				CASE 
+					WHEN c.from_user = ? THEN u2.profile_photo_url 
+					ELSE u1.profile_photo_url 
+				END
 		END AS photo_url,
 		CASE
 			WHEN m.is_photo THEN 'Photo'
 			ELSE m.content
 		END AS last_message,
 		m.created_at AS last_message_time
-	FROM (
-		SELECT 
-			c.id AS conversation_id,
-			MAX(m.created_at) AS latest_message_time
-		FROM 
-			conversations c
-		JOIN 
-			messages m ON c.id = m.conversation_id
-		WHERE 
-			c.from_user = ? OR c.to_user = ?
-		GROUP BY 
-			c.id
-	) latest_conversations
-	JOIN conversations c ON c.id = latest_conversations.conversation_id
-	LEFT JOIN users u ON (u.username = c.to_user OR u.username = c.from_user)
+	FROM conversations c
+	JOIN messages m ON m.id = (
+		SELECT id FROM messages 
+		WHERE conversation_id = c.id 
+		ORDER BY created_at DESC 
+		LIMIT 1
+	)
+	LEFT JOIN users u1 ON u1.username = c.from_user
+	LEFT JOIN users u2 ON u2.username = c.to_user
 	LEFT JOIN groups g ON g.groupname = c.to_group
-	JOIN messages m ON m.conversation_id = c.id AND m.created_at = latest_conversations.latest_message_time
-	ORDER BY 
-		latest_conversations.latest_message_time DESC;
+	WHERE c.from_user = ? OR c.to_user = ? OR c.to_group = ?
+	ORDER BY m.created_at DESC;
 	`
 
 	// Execute the query
-	rows, err := db.c.Query(query, username, username)
+	rows, err := db.c.Query(query, username, username, username, username, username)
 	if err != nil {
 		return nil, err
 	}

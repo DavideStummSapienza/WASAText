@@ -21,9 +21,9 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
         (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
         (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
     FROM messages m
-    JOIN conversations c ON m.id = c.message_id
-    WHERE m.id IN (
-        SELECT message_id
+    JOIN conversations c ON m.conversation_id = c.id
+    WHERE m.conversation_id IN (
+        SELECT id
         FROM conversations
         WHERE 
             (from_user = ? AND to_user = ?) 
