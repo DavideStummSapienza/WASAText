@@ -98,17 +98,18 @@ components:
           minLength: 1
           maxLength: 255
           example: "Hello"
-        is_photo:
-          description: "flag if content is a photo"
-          type: boolean
-          example: false
-        photo_url:
-          description: "URL to the image, if an image was send"
+        sender:
+          description: |
+            Sender's Username. Null if not needed.
           type: string
           pattern: '^[A-Za-z0-9 ]+$'
           minLength: 1
           maxLength: 255
-          example: "https://example.com/toblerone.png"
+          example: "Bob"
+        is_photo:
+          description: "flag if content is a photo"
+          type: boolean
+          example: false
         is_forwarded:
           description: "flag if message was forwarded"
           type: boolean
@@ -120,22 +121,7 @@ components:
           maxLength: 255
           format: date-time
           example: "2023-01-01T23:45:00Z"
-        sender:
-          description: |
-            Sender's Username. Null if not needed.
-          type: string
-          pattern: '^[A-Za-z0-9 ]+$'
-          minLength: 1
-          maxLength: 255
-          example: "Bob"
-        receiver:
-          description: |
-            Receiver's Username. Null if not needed.
-          type: string
-          pattern: '^[A-Za-z0-9 ]+$'
-          minLength: 1
-          maxLength: 255
-          example: "Billy"
+        
           
         fully_received:
           description: "flag if message was received"
@@ -506,14 +492,6 @@ paths:
                   description: "Indicates whether the message is a photo or not."
                   type: boolean
                   example: false
-                  
-                photo_url:
-                  description: "The URL of the photo if the message is a photo."
-                  type: string
-                  pattern: '^[A-Za-z0-9 ]+$'
-                  minLength: 1
-                  maxLength: 255
-                  example: "https://example.com/photo.jpg"
   
       responses:
         "200":

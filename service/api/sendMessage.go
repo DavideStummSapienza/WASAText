@@ -13,7 +13,6 @@ import (
 type sendMessageRequest struct {
 	Message   string `json:"message"`    // The message content (text)
 	IsPhoto   bool   `json:"is_photo"`    // Whether the message is a photo message
-	PhotoURL  string `json:"photo_url"`   // URL of the photo (if the message is a photo)
 }
 
 
@@ -74,7 +73,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 
 	// Validate PhotoURL if IsPhoto is true
 	if request.IsPhoto {
-		if err := validateURL(request.PhotoURL); err != nil {
+		if err := validateURL(request.Message); err != nil {
 			http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusBadRequest)
 			return
 		}
