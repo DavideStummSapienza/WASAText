@@ -78,5 +78,9 @@ func (rt *_router) changeProfilePicture(w http.ResponseWriter, r *http.Request, 
 
 	// Send a 200 OK response with the success payload.
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Handle any potential error during JSON encoding.
+		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
+		return
+	}
 }

@@ -12,9 +12,9 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
 	rows, err := db.c.Query(`
     SELECT 
         m.id, 
-        m.content, 
+        m.content,
+		m.sender,
         m.is_photo, 
-        m.photo_url,
 		m.is_forwarded, 
         m.created_at,
         c.from_user, 
@@ -26,9 +26,9 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
         SELECT id
         FROM conversations
         WHERE 
-            (from_user = ? AND to_user = ?) 
-            OR (from_user = ? AND to_user = ?) 
-            OR to_group = ?
+            (user1 = ? AND user2 = ?) 
+            OR (user1 = ? AND user2 = ?) 
+            OR groupname = ?
     )
     ORDER BY m.created_at DESC`, 
     username, conversationPartnerName, conversationPartnerName, username, conversationPartnerName)
@@ -42,7 +42,7 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
 	for rows.Next() {
 		var msg ConversationDetail
 
-		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.IsForwarded, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead); err != nil {
+		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.Sender, &msg.IsPhoto, &msg.IsForwarded, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead); err != nil {
 			return nil, fmt.Errorf("error scanning message row: %w", err)
 		}
 

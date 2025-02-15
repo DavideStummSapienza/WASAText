@@ -81,7 +81,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Retrieve the original message to ensure it exists and belongs to the user.
-	originalMessage, err := rt.db.GetMessage(&forwardedMessageId, username, partnerUsername)
+	originalMessage, err := rt.db.GetMessage(&forwardedMessageId)
 	if err != nil {
 		// If the original message is not found, respond with 404 Not Found.
 		http.Error(w, `{"error": "original message not found"}`, http.StatusNotFound)
@@ -94,7 +94,6 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps htt
         ToUser:      request.RecipientUsername,
         Content:     originalMessage.Content,
         IsPhoto:     originalMessage.IsPhoto,
-        PhotoURL:    originalMessage.PhotoURL,
         IsForwarded: true, // Mark it as forwarded
     }
 
@@ -107,7 +106,7 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Retrieve the newly forwarded message.
-	latestMessage, err := rt.db.GetMessage(&messageID, username, request.RecipientUsername)
+	latestMessage, err := rt.db.GetMessage(&messageID)
 	if err != nil {
 		// If retrieving the forwarded message fails, respond with 500 Internal Server Error.
 		http.Error(w, `{"error": "failed to retrieve forwarded message"}`, http.StatusInternalServerError)

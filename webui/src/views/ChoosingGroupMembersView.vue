@@ -2,10 +2,17 @@
   <div class="group-container">
     <h1 class="title">Members</h1>
     <div class="members-list">
-      <UserCard v-for="user in selectedUsers" :key="user.id" :user="user" />
+      <UserCard 
+        v-for="user in selectedUsers" 
+        :key="user.id" 
+        :user="user" 
+        :forGroup="true"
+        :disableClick="true"
+      />
     </div>
     <div class="button-group">
       <button class="btn add" @click="navigateToSearch">Add</button>
+      <button class="btn cancel" @click="cancelGroupCreation">Cancel</button>
       <button class="btn create" @click="createGroup">Create</button>
     </div>
   </div>
@@ -13,13 +20,12 @@
 
 <script>
 import UserCard from "@/components/UserCard.vue";
-import { useRouter } from "vue-router";
 
 export default {
   components: { UserCard },
   data() {
     return {
-      selectedUsers: [], // Liste der hinzugefügten Benutzer
+      selectedUsers: [],
     };
   },
   methods: {
@@ -28,19 +34,24 @@ export default {
     },
     createGroup() {
       console.log("Creating group with members:", this.selectedUsers);
-      this.$router.push("/chats")
-      // Hier würdest du eine API-Anfrage zum Erstellen der Gruppe senden
+      localStorage.removeItem("selectedUsers");
+      this.$router.push("/chats");
     },
-  },
-  mounted() {
-    // Prüft, ob Benutzer in localStorage gespeichert wurden (z.B. nach dem Hinzufügen)
-    const storedUsers = localStorage.getItem("selectedUsers");
-    if (storedUsers) {
-      this.selectedUsers = JSON.parse(storedUsers);
+    cancelGroupCreation() {
+      localStorage.removeItem("selectedUsers");
+      this.$router.push("/");
+    },
+    loadSelectedUsers() {
+      const storedUsers = localStorage.getItem("selectedUsers");
+      this.selectedUsers = storedUsers ? JSON.parse(storedUsers) : [];
     }
   },
+  mounted() {
+    this.loadSelectedUsers();
+  }
 };
 </script>
+
 
 <style scoped>
 .group-container {

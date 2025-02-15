@@ -57,7 +57,7 @@ type AppDatabase interface {
 	DeleteMessage(currentUser string, messageID int) error
 	MarkAllMessagesAsReceived(partnerUsername string, username string) error
 	MarkAllMessagesAsRead(username string, partnerUsername string) error
-	GetMessage(messageID *int, username, partnerUsername string) (*ConversationDetail, error)
+	GetMessage(messageID *int) (*ConversationDetail, error)
 
 
 	// Comment Functions
@@ -84,7 +84,7 @@ type appdbimpl struct {
 // `db` is required - an error will be returned if `db` is `nil`.
 func New(db *sql.DB) (AppDatabase, error) {
 	if db == nil {
-		return nil, errors.New("database is required when building a AppDatabase")
+		return nil, errors.New("database is required when building an AppDatabase")
 	}
 
 	// List of Tablenames and their SQL-CREATE-Commands
@@ -99,17 +99,17 @@ func New(db *sql.DB) (AppDatabase, error) {
 		"conversations": `
 			CREATE TABLE IF NOT EXISTS conversations (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-				from_user TEXT REFERENCES users(username) ON DELETE CASCADE,
-				to_user TEXT REFERENCES users(username) ON DELETE CASCADE,
-				to_group TEXT REFERENCES groups(groupname) ON DELETE CASCADE
+				user1 TEXT REFERENCES users(username) ON DELETE CASCADE,
+				user2 TEXT REFERENCES users(username) ON DELETE CASCADE,
+				groupname TEXT REFERENCES groups(groupname) ON DELETE CASCADE
 			);
 		`,
 		"messages": `
 			CREATE TABLE IF NOT EXISTS messages (
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				content TEXT,
+				sender TEXT REFERENCES users(username) ON DELETE CASCADE,
 				is_photo BOOLEAN DEFAULT FALSE,
-				photo_url TEXT,
 				is_forwarded BOOLEAN DEFAULT FALSE,
 				created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 				conversation_id INTEGER NOT NULL REFERENCES conversations(id) ON DELETE CASCADE

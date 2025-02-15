@@ -17,7 +17,11 @@ func (db *appdbimpl) ChangeUsername(oldUsername, newUsername string) error {
 	}
 	defer func() {
 		if err != nil {
-			tx.Rollback() // Rollback if an error occurs
+			rollbackErr := tx.Rollback() // Rollback if an error occurs
+			if rollbackErr != nil {
+				// Rollbackerror + Original Error
+				err = fmt.Errorf("failed to rollback transaction: %w, original error: %w", rollbackErr, err)
+			}
 		}
 	}()
 
@@ -27,13 +31,24 @@ func (db *appdbimpl) ChangeUsername(oldUsername, newUsername string) error {
 		return fmt.Errorf("failed to update username: %w", err)
 	}
 
-	// Update the username in all associated conversations
-	_, err = tx.Exec("UPDATE conversations SET from_user = ? WHERE from_user = ?", newUsername, oldUsername)
+	// Update the username in all associated conversations (user1, user2)
+	_, err = tx.Exec("UPDATE conversations SET user1 = ? WHERE user1 = ?", newUsername, oldUsername)
 	if err != nil {
-		return fmt.Errorf("failed to update username in conversations: %w", err)
+		return fmt.Errorf("failed to update username in conversations (user1): %w", err)
 	}
 
-	// Update the username in message status table
+	_, err = tx.Exec("UPDATE conversations SET user2 = ? WHERE user2 = ?", newUsername, oldUsername)
+	if err != nil {
+		return fmt.Errorf("failed to update username in conversations (user2): %w", err)
+	}
+
+	// Update the username in the messages table (sender)
+	_, err = tx.Exec("UPDATE messages SET sender = ? WHERE sender = ?", newUsername, oldUsername)
+	if err != nil {
+		return fmt.Errorf("failed to update username in messages: %w", err)
+	}
+
+	// Update the username in message_status table
 	_, err = tx.Exec("UPDATE message_status SET user_id = ? WHERE user_id = ?", newUsername, oldUsername)
 	if err != nil {
 		return fmt.Errorf("failed to update username in message_status: %w", err)

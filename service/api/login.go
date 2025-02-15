@@ -71,12 +71,20 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 
 	// If the user does not exist, create a new user and return the generated token
 	authToken := generateToken() // Generate a random auth token
-	rt.db.CreateUser(request.Username, "", authToken)
+	err = rt.db.CreateUser(request.Username, "", authToken)
+	if err != nil{
+		http.Error(w, `{"error": "Couldnt create new user"}`, http.StatusInternalServerError)
+		return
+	}
 
 	// Respond with the newly created user's auth token
 	response := LoginResponse{Identifier: authToken}
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		// Handle any potential error during JSON encoding.
+		http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
+		return
+	}
 }
 
 // generateToken generates a random integer token

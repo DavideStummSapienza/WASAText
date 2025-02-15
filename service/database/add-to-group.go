@@ -47,6 +47,17 @@ func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUse
 		if err != nil {
 			return fmt.Errorf("failed to create group: %w", err)
 		}
+
+		// Create the conversation for the new group
+
+		_, err = db.c.Exec(`
+			INSERT INTO conversations (groupname)
+			VALUES (?);
+		`, groupname)
+
+		if err != nil {
+			return fmt.Errorf("failed to create conversation for new group: %w", err)
+		}
 	}
 
 	// Add the current user to the group (if not already a member)

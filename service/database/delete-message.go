@@ -20,18 +20,26 @@ func (db *appdbimpl) DeleteMessage(currentUser string, messageID int) error {
 		return fmt.Errorf("failed to start transaction: %w", err)
 	}
 
+	// Defer the rollback in case of any error, to ensure a clean up if something goes wrong
+	defer func() {
+		if err != nil {
+			rollbackErr := tx.Rollback()
+			if rollbackErr != nil {
+				err = fmt.Errorf("failed to rollback transaction: %w, original error: %w", rollbackErr, err)
+			}
+		}
+	}()
+
 	var sender sql.NullString
 
 	// Step 1: Retrieve the message and check if the user has permission to delete it
 	err = tx.QueryRow(`
-        SELECT m.id, c.from_user
+        SELECT m.id, sender
         FROM messages m
-        INNER JOIN conversations c ON m.conversation_id = c.id
         WHERE m.id = ?`,
 		messageID).Scan(&messageID, &sender)
 
 	if err != nil {
-		tx.Rollback()
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("message not found or no permissions to delete")
 		}
@@ -40,20 +48,18 @@ func (db *appdbimpl) DeleteMessage(currentUser string, messageID int) error {
 
 	// Step 2: Verify that the current user is the sender of the message
 	if sender.String != currentUser {
-		tx.Rollback()
 		return fmt.Errorf("user is not allowed to delete this message")
 	}
 
 	// Step 3: Delete the message (cascading delete will handle related records)
 	_, err = tx.Exec(`DELETE FROM messages WHERE id = ?`, messageID)
 	if err != nil {
-		tx.Rollback()
 		return fmt.Errorf("failed to delete message: %w", err)
 	}
 
 	// Step 4: Commit the transaction
-	if err := tx.Commit(); err != nil {
-		tx.Rollback()
+	err = tx.Commit()
+	if err != nil {
 		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 

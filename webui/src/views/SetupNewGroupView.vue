@@ -3,10 +3,7 @@
     <div class="input-group">
       <label for="groupname">Groupname:</label>
       <input type="text" id="groupname" v-model="groupname" placeholder="Enter group name">
-    </div>
-    <div class="input-group">
-      <label for="photoURL">Photo URL:</label>
-      <input type="text" id="photoURL" v-model="photoURL" placeholder="Enter photo URL">
+      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
     </div>
     <button @click="createGroup">Next</button>
   </div>
@@ -17,15 +14,18 @@ export default {
   data() {
     return {
       groupname: '',
-      photoURL: ''
+      errorMessage: ''
     };
   },
   methods: {
     createGroup() {
-      // Hier kannst du die Logik für das Erstellen der Gruppe hinzufügen
+      if (!this.groupname.trim()) {
+        this.errorMessage = "Group name cannot be empty!";
+        return;
+      }
+      this.errorMessage = "";
       console.log('Groupname:', this.groupname);
-      console.log('Photo URL:', this.photoURL);
-      this.$router.push("/choose-members")
+      this.$router.push({ path: "/choose-members", query: { groupname: this.groupname.trim() } });
     }
   }
 };
@@ -41,10 +41,12 @@ export default {
 
 .input-group {
   margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
 }
 
 label {
-  margin-right: 10px;
+  margin-bottom: 5px;
 }
 
 input {
@@ -62,5 +64,11 @@ button {
 
 button:hover {
   background-color: #45a049;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-top: 5px;
 }
 </style>

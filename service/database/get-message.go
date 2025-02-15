@@ -18,49 +18,24 @@ import "fmt"
 // Returns:
 // - A pointer to a ConversationDetail struct containing message details.
 // - An error if the message retrieval fails.
-func (db *appdbimpl) GetMessage(messageID *int, username, partnerUsername string) (*ConversationDetail, error) {
+func (db *appdbimpl) GetMessage(messageID *int) (*ConversationDetail, error) {
 	var msg ConversationDetail
 	var err error
 
 	// If a specific message ID is provided, retrieve that message
-	if messageID != nil {
-		err = db.c.QueryRow(`
-        SELECT 
-            m.id, 
-            m.content, 
-            m.is_photo, 
-            m.photo_url,
-            m.is_forwarded, 
-            m.created_at,
-            c.from_user, 
-            (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
-            (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
-        FROM messages m
-        JOIN conversations c ON m.conversation_id = c.id
-        WHERE m.id = ?`, *messageID).Scan(
-			&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.IsForwarded, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead)
-	} else {
-		// If no message ID is provided, retrieve the latest message in the conversation
-		err = db.c.QueryRow(`
-        SELECT 
-            m.id, 
-            m.content, 
-            m.is_photo, 
-            m.photo_url,
-            m.is_forwarded, 
-            m.created_at,
-            c.from_user, 
-            (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
-            (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
-        FROM messages m
-        JOIN conversations c ON m.conversation_id = c.id
-        WHERE (c.from_user = ? AND c.to_user = ?) 
-           OR (c.from_user = ? AND c.to_user = ?) 
-           OR c.to_group = ?
-        ORDER BY m.created_at DESC
-        LIMIT 1`, username, partnerUsername, partnerUsername, username, partnerUsername).Scan(
-			&msg.MessageID, &msg.Content, &msg.IsPhoto, &msg.PhotoURL, &msg.IsForwarded, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead)
-	}
+    err = db.c.QueryRow(`
+    SELECT 
+        m.id, 
+        m.content,
+        m.sender, 
+        m.is_photo, 
+        m.is_forwarded, 
+        m.created_at, 
+        (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
+        (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
+    FROM messages m
+    WHERE m.id = ?`, *messageID).Scan(&msg.MessageID, &msg.Content, &msg.Sender, &msg.IsPhoto, &msg.IsForwarded, &msg.Timestamp, &msg.FullyReceived, &msg.FullyRead)
+
 
 	// Handle any errors during the database query
 	if err != nil {

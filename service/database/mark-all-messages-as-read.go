@@ -7,8 +7,6 @@ import (
 
 // MarkAllMessagesAsRead updates all messages in a conversation as read for a user.
 func (db *appdbimpl) MarkAllMessagesAsRead(username string, partnerUsername string) error {
-
-
 	_, err := db.c.Exec(`
 		UPDATE message_status
 		SET read = TRUE
@@ -17,12 +15,18 @@ func (db *appdbimpl) MarkAllMessagesAsRead(username string, partnerUsername stri
 			FROM messages m
 			JOIN conversations c ON m.conversation_id = c.id
 			WHERE 
-				(c.to_user = ? AND c.from_user = ?) OR
-				(c.to_group = ? AND ? IN (SELECT membername FROM group_members WHERE groupname = c.to_group))
-		) AND user_id = ?`,
-		username, partnerUsername,
-		partnerUsername, username,
-		username)
+				(c.user1 = ? AND c.user2 = ?) OR
+				(c.user2 = ? AND c.user1 = ?) OR
+				(c.groupname IS NOT NULL AND c.groupname IN (
+					SELECT groupname FROM group_members WHERE membername = ?
+				))
+		) 
+		AND user_id = ?`,
+		username, partnerUsername, // Privatechat
+		partnerUsername, username, // Reverse
+		username, // Groupchat
+		username, // User whose status is updated
+	)
 
 	if err != nil {
 		log.Printf("Error marking messages as read for user %s and partner %s: %v", username, partnerUsername, err)

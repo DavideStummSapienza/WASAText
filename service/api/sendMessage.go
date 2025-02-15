@@ -86,8 +86,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		ToUser:      partnerUsername,
 		Content:     request.Message,
 		IsPhoto:     request.IsPhoto,
-		PhotoURL:    request.PhotoURL,
-		IsForwarded: false, // Standardmäßig nicht weitergeleitet
+		IsForwarded: false, // not forwarded by default
 	}
 
 	// Create the message in the database by calling SendMessage
@@ -99,7 +98,7 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 	}
 
 	// Retrieve the conversation details including the message.
-	latestMessage, err := rt.db.GetMessage(&messageID,username,partnerUsername)
+	latestMessage, err := rt.db.GetMessage(&messageID)
 	if err != nil {
 		// If there's an error fetching the conversation details, respond with 500 Internal Server Error.
 		http.Error(w, `{"error": "failed to retrieve conversation detail: `+err.Error()+`"}`, http.StatusInternalServerError)

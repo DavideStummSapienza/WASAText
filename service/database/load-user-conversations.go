@@ -6,18 +6,18 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 	query := `
 	SELECT 
 		CASE 
-			WHEN c.to_group IS NOT NULL THEN g.groupname
+			WHEN c.groupname IS NOT NULL THEN g.groupname
 			ELSE 
 				CASE 
-					WHEN c.from_user = ? THEN c.to_user 
-					ELSE c.from_user 
+					WHEN c.user1 = ? THEN c.user2
+					ELSE c.user1 
 				END
 		END AS name,
 		CASE 
-			WHEN c.to_group IS NOT NULL THEN g.group_photo_url
+			WHEN c.groupname IS NOT NULL THEN g.group_photo_url
 			ELSE 
 				CASE 
-					WHEN c.from_user = ? THEN u2.profile_photo_url 
+					WHEN c.user1 = ? THEN u2.profile_photo_url 
 					ELSE u1.profile_photo_url 
 				END
 		END AS photo_url,
@@ -33,15 +33,15 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 		ORDER BY created_at DESC 
 		LIMIT 1
 	)
-	LEFT JOIN users u1 ON u1.username = c.from_user
-	LEFT JOIN users u2 ON u2.username = c.to_user
-	LEFT JOIN groups g ON g.groupname = c.to_group
-	WHERE c.from_user = ? OR c.to_user = ? OR c.to_group = ?
+	LEFT JOIN users u1 ON u1.username = c.user1
+	LEFT JOIN users u2 ON u2.username = c.user2
+	LEFT JOIN groups g ON g.groupname = c.groupname
+	WHERE c.user1 = ? OR c.user2 = ? OR c.groupname = ?
 	ORDER BY m.created_at DESC;
 	`
 
 	// Execute the query
-	rows, err := db.c.Query(query, username, username, username, username, username)
+	rows, err := db.c.Query(query, username, username, username)
 	if err != nil {
 		return nil, err
 	}
