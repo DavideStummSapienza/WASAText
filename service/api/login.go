@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
 	"net/http"
@@ -40,6 +41,9 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
+	var ErrUserNotFound = errors.New("user not found")
+	var ErrGroupNotFound = errors.New("group not found")
+
 	// Check if the user already exists in the database
 	// Check if the username already exists using GetUser
 	existingUser, err := rt.db.GetUser(request.Username)
@@ -47,9 +51,12 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		// If user exists, respond with their identifier
 		response := LoginResponse{Identifier: existingUser.AuthToken}
 		w.WriteHeader(http.StatusOK)
-		json.NewEncoder(w).Encode(response)
-		return
-	} else if err.Error() != "user not found" {
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			// Handle any potential error during JSON encoding.
+			http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
+			return
+		}
+	} else if !errors.Is(err, ErrUserNotFound) {
 		// If there's a database error, return an internal server error
 		log.Printf("Database error: %v", err)
 		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
@@ -61,7 +68,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		// A group with this name exists
 		http.Error(w, `{"error": "username cannot be the same as a group name"}`, http.StatusBadRequest)
 		return
-	} else if err.Error() != "group not found" {
+	} else if !errors.Is(err, ErrGroupNotFound) {
 		// Database error
 		log.Printf("Database error: %v", err)
 		http.Error(w, `{"error": "database error"}`, http.StatusInternalServerError)

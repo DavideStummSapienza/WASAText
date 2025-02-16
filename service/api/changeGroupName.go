@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -57,11 +58,13 @@ func (rt *_router) changeGroupName(w http.ResponseWriter, r *http.Request, ps ht
 		return
 	}
 
+	var ErrUserNotFound = errors.New("user not found")
+
 	_, err = rt.db.GetUser(req.NewGroupName)
 	if err == nil {
 		http.Error(w, `{"error": "group name already exists as a username"}`, http.StatusBadRequest)
 		return
-	} else if err.Error() != "user not found" {
+	} else if !errors.Is(err, ErrUserNotFound) {
 		http.Error(w, `{"error": "database error while checking username"}`, http.StatusInternalServerError)
 		return
 	}

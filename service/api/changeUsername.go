@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -62,13 +63,16 @@ func (rt *_router) changeUsername(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
+	var ErrUserNotFound = errors.New("user not found")
+	var ErrGroupNotFound = errors.New("group not found")
+
 	// Check if the new username already exists in the database
 	_, err := rt.db.GetUser(request.NewUsername)
 	if err == nil {
 		// If no error, the username already exists
 		http.Error(w, `{"error": "username already exists"}`, http.StatusBadRequest)
 		return
-	} else if err.Error() != "user not found" {
+	} else if !errors.Is(err,ErrUserNotFound) {
 		// If an unexpected database error occurs
 		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
@@ -78,7 +82,7 @@ func (rt *_router) changeUsername(w http.ResponseWriter, r *http.Request, ps htt
 	if err == nil {
 		http.Error(w, `{"error": "username cannot be the same as a group name"}`, http.StatusBadRequest)
 		return
-	} else if err.Error() != "group not found" {
+	} else if !errors.Is(err, ErrGroupNotFound) {
 		http.Error(w, `{"error": "database error"}`, http.StatusInternalServerError)
 		return
 	}

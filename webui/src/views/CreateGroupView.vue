@@ -3,30 +3,78 @@
     <div class="input-group">
       <label for="groupname">Groupname:</label>
       <input type="text" id="groupname" v-model="groupname" placeholder="Enter group name">
-      <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+      <label for="members">Add Members:</label>
+
+      <div class="add-members">
+        <input type="text" id="members" v-model="newMember" placeholder="Enter an username">
+        <button @click="addMember"> Add </button>
+      </div>
+
+      <label for="memberlist">Added Members:</label>
+      <p id="memberlist" v-for="(member, index) in addedMembers" :key="index">
+        {{ member }}
+      </p>
+
+      <ErrorMsg v-if="errorMessage" :message="errorMessage" />
     </div>
-    <button @click="createGroup">Next</button>
+    <button @click="createGroup">Create</button>
   </div>
 </template>
 
 <script>
+import axios from "@/services/axios";
+import ErrorMsg from '../components/ErrorMsg.vue';
+
 export default {
+  components: {ErrorMsg},
   data() {
     return {
+      addedMembers: [],
       groupname: '',
+      newMember:"",
       errorMessage: ''
     };
   },
   methods: {
-    createGroup() {
-      if (!this.groupname.trim()) {
-        this.errorMessage = "Group name cannot be empty!";
-        return;
+    async createGroup() {
+      try {
+
+        if (!this.groupname.trim()) {
+          this.errorMessage = "Group name cannot be empty!";
+          return;
+        }
+
+        this.errorMessage = "";
+        console.log('Groupname:', this.groupname);
+
+        const response = await axios.post("/groups", {
+          groupname: this.groupname,
+          names: this.addedMembers
+        })
+
+
+        this.$router.push({ path: "/chats", query: { groupname: this.groupname.trim() } });
+
+      } catch(error) {
+        
+        if (error.response && error.response.data.error) {
+          this.errorMessage = error.response.data.error;
+        } else {
+          this.errorMessage = "An unexpected error occurred.";
+        }
+
       }
-      this.errorMessage = "";
-      console.log('Groupname:', this.groupname);
-      this.$router.push({ path: "/choose-members", query: { groupname: this.groupname.trim() } });
+    },
+    addMember() {
+    if (!this.newMember.trim()) {
+      this.errorMessage = "Member name cannot be empty!";
+      return;
     }
+    this.errorMessage = "";
+    this.addedMembers.push(this.newMember.trim()); // add member
+    this.newMember = ""; // clear input field
+  }
+
   }
 };
 </script>
@@ -43,6 +91,12 @@ export default {
   margin-bottom: 15px;
   display: flex;
   flex-direction: column;
+}
+
+.add-members {
+  display: flex;
+  flex-direction: row;
+  gap: 20px
 }
 
 label {

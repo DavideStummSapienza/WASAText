@@ -37,6 +37,9 @@ export default {
         // safe Identifier in sessionStorage
         sessionStorage.setItem("identifier", response.data.identifier);
 
+        // safe current username in sessionStorage
+        sessionStorage.setItem("currentUser", this.username)
+
         // On success, redirect to the chat list page
         this.$router.push("/chats");
       } catch (err) {

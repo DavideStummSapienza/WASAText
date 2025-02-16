@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 
 	"github.com/julienschmidt/httprouter"
@@ -47,9 +48,27 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 	}
 
 	if len(req.Names) == 0 {
-		http.Error(w, `{"error": "at least one user must be added"}`, http.StatusBadRequest)
+		http.Error(w, `{"error": "at least one other user must be added"}`, http.StatusBadRequest)
 		return
 	}
+	
+	var ErrUserNotFound = errors.New("user not found")
+
+	for _, newMember := range req.Names {
+		_, err = rt.db.GetUser(newMember)
+		if err != nil {
+			// Check if error is "user not found"
+			if errors.Is(err, ErrUserNotFound) {
+				http.Error(w, `{"error": "User '`+newMember+`' does not exist"}`, http.StatusBadRequest)
+				return
+			}
+	
+			// if different error
+			http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
+			return
+		}
+	}
+		
 
 	// Add users to group in database
 	err = rt.db.AddToGroup(req.GroupName, req.Names, username)
@@ -59,7 +78,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 	}
 
 	// Send success response
-	response := AddToGroupResponse{Message: "Users successfully added to group and group created if didnt existed"}
+	response := AddToGroupResponse{Message: "Users successfully added to the group. The group was created if it did not exist."}
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(response); err != nil {
 		// Handle any potential error during JSON encoding.

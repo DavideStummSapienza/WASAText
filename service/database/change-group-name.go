@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 )
 
@@ -30,12 +31,14 @@ func (db *appdbimpl) ChangeGroupName(oldGroupName string, newGroupName string) e
 		return fmt.Errorf("group with name '%s' does not exist", oldGroupName)
 	}
 
+	var ErrUserNotFound = errors.New("user not found")
+
 	// Check if the new groupname already exists as a username
 	_, err = db.GetUser(newGroupName)
 
 	if err == nil {
 		return fmt.Errorf("group name already exists as a username")
-	} else if err.Error() != "user not found" {
+	} else if !errors.Is(err, ErrUserNotFound) {
 		return fmt.Errorf("database error while checking username: %w", err)
 	}
 
