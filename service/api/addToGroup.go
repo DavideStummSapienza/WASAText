@@ -73,9 +73,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 
 	// Add users to group in database
 	err = rt.db.AddToGroup(req.GroupName, req.Names, username)
-
-
-
+	log.Print(err)
 	if err != nil {
 		http.Error(w, `{"error": "failed to add users to group"}`, http.StatusInternalServerError)
 		return
