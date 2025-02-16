@@ -23,33 +23,21 @@ export default {}
             </h6>
             <ul class="nav flex-column">
               <li class="nav-item">
-                <RouterLink to="/" class="nav-link">
+                <RouterLink to="/chats" class="nav-link">
                   <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#home"/></svg>
-                  Home
+                  Chats
                 </RouterLink>
               </li>
               <li class="nav-item">
-                <RouterLink to="/link1" class="nav-link">
+                <RouterLink to="/profile" class="nav-link">
                   <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#layout"/></svg>
-                  Menu item 1
+                  Profile Settings
                 </RouterLink>
               </li>
               <li class="nav-item">
-                <RouterLink to="/link2" class="nav-link">
+                <RouterLink to="/" class="nav-link">
                   <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#key"/></svg>
-                  Menu item 2
-                </RouterLink>
-              </li>
-            </ul>
-
-            <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted text-uppercase">
-              <span>Secondary menu</span>
-            </h6>
-            <ul class="nav flex-column">
-              <li class="nav-item">
-                <RouterLink :to="'/some/' + 'variable_here' + '/path'" class="nav-link">
-                  <svg class="feather"><use href="/feather-sprite-v4.29.0.svg#file-text"/></svg>
-                  Item 1
+                  Login
                 </RouterLink>
               </li>
             </ul>

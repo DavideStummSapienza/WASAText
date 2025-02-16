@@ -41,7 +41,7 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 	`
 
 	// Execute the query
-	rows, err := db.c.Query(query, username, username, username)
+	rows, err := db.c.Query(query, username, username, username, username, username)
 	if err != nil {
 		return nil, err
 	}

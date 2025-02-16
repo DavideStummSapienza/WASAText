@@ -17,11 +17,9 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
         m.is_photo, 
 		m.is_forwarded, 
         m.created_at,
-        c.from_user, 
         (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND received = FALSE) = 0 AS fully_received,
         (SELECT COUNT(*) FROM message_status WHERE message_id = m.id AND read = FALSE) = 0 AS fully_read
     FROM messages m
-    JOIN conversations c ON m.conversation_id = c.id
     WHERE m.conversation_id IN (
         SELECT id
         FROM conversations
@@ -42,7 +40,7 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
 	for rows.Next() {
 		var msg ConversationDetail
 
-		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.Sender, &msg.IsPhoto, &msg.IsForwarded, &msg.Timestamp, &msg.Sender, &msg.FullyReceived, &msg.FullyRead); err != nil {
+		if err := rows.Scan(&msg.MessageID, &msg.Content, &msg.Sender, &msg.IsPhoto, &msg.IsForwarded, &msg.Timestamp, &msg.FullyReceived, &msg.FullyRead); err != nil {
 			return nil, fmt.Errorf("error scanning message row: %w", err)
 		}
 

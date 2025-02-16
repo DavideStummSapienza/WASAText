@@ -5,8 +5,7 @@ import LoginView from "@/views/LoginView.vue";
 import ChatListView from "@/views/ChatListView.vue"; 
 import ChatView from "@/views/ChatView.vue"; 
 import SearchView from "@/views/SearchView.vue";
-import ChoosingGroupMembersView from "@/views/ChoosingGroupMembersView.vue";
-import SetupNewGroupView from "@/views/SetupNewGroupView.vue";
+import CreateGroupView from "@/views/CreateGroupView.vue";
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
@@ -17,8 +16,7 @@ const router = createRouter({
     { path: "/group-settings", component: GroupSettingsView }, // Group Settings-Site
     { path: "/chat", component: ChatView }, // specific Chat
     { path: "/search", component: SearchView }, // Search Users-Site
-    { path: "/choose-members", component: ChoosingGroupMembersView }, // Choosing Group Members-Site
-    { path: "/create-group", component: SetupNewGroupView }, // Group Setup-Site
+    { path: "/create-group", component: CreateGroupView }, // Create New Group-Site
   ],
 });
 

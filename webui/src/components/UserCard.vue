@@ -1,7 +1,6 @@
 <template>
   <div 
     class="user-card" 
-    :class="{ 'disabled': forGroup && disableClick }"
     @click="passChoosenUser"
   >
     <img 
@@ -17,29 +16,10 @@
 export default {
   props: {
     user: Object,
-    forGroup: Boolean,
-    disableClick: Boolean, // ⬅️ Neue Prop für Deaktivierung
   },
   methods: {
     passChoosenUser() {
-      if (this.disableClick) return; // ⬅️ Blockiert Klick in ChooseMemberView
-
-      if (this.forGroup) {
-        // Bestehende Benutzer laden
-        let selectedUsers = JSON.parse(localStorage.getItem("selectedUsers")) || [];
-
-        // Prüfen, ob der Benutzer schon in der Liste ist
-        const exists = selectedUsers.some(u => u.id === this.user.id);
-        if (!exists) {
-          selectedUsers.push(this.user);
-          localStorage.setItem("selectedUsers", JSON.stringify(selectedUsers));
-        }
-
-        // Zurück zu `ChooseMemberView`
-        this.$router.push("/choose-members");
-      } else {
         this.$router.push({ path: '/chat', query: { username: this.user.username } });
-      }
     },
   },
 };
