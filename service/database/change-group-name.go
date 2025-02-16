@@ -31,7 +31,6 @@ func (db *appdbimpl) ChangeGroupName(oldGroupName string, newGroupName string) e
 		return fmt.Errorf("group with name '%s' does not exist", oldGroupName)
 	}
 
-	var ErrUserNotFound = errors.New("user not found")
 
 	// Check if the new groupname already exists as a username
 	_, err = db.GetUser(newGroupName)

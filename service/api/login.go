@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/DavideStummSapienza/WASAText/service/database"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -41,8 +42,6 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-	var ErrUserNotFound = errors.New("user not found")
-	var ErrGroupNotFound = errors.New("group not found")
 
 	// Check if the user already exists in the database
 	// Check if the username already exists using GetUser
@@ -56,7 +55,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 			http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
 			return
 		}
-	} else if !errors.Is(err, ErrUserNotFound) {
+	} else if !errors.Is(err, database.ErrUserNotFound) {
 		// If there's a database error, return an internal server error
 		log.Printf("Database error: %v", err)
 		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
@@ -68,7 +67,7 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		// A group with this name exists
 		http.Error(w, `{"error": "username cannot be the same as a group name"}`, http.StatusBadRequest)
 		return
-	} else if !errors.Is(err, ErrGroupNotFound) {
+	} else if !errors.Is(err, database.ErrGroupNotFound) {
 		// Database error
 		log.Printf("Database error: %v", err)
 		http.Error(w, `{"error": "database error"}`, http.StatusInternalServerError)

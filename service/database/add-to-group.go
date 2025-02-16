@@ -18,7 +18,6 @@ import (
 func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUser string) error {
 
 
-	var ErrUserNotFound = errors.New("user not found")
 
 	// Check if the groupname already exists as a username
 	_, err := db.GetUser(groupname)

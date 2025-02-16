@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/DavideStummSapienza/WASAText/service/database"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -58,13 +59,13 @@ func (rt *_router) changeGroupName(w http.ResponseWriter, r *http.Request, ps ht
 		return
 	}
 
-	var ErrUserNotFound = errors.New("user not found")
+	
 
 	_, err = rt.db.GetUser(req.NewGroupName)
 	if err == nil {
 		http.Error(w, `{"error": "group name already exists as a username"}`, http.StatusBadRequest)
 		return
-	} else if !errors.Is(err, ErrUserNotFound) {
+	} else if !errors.Is(err, database.ErrUserNotFound) {
 		http.Error(w, `{"error": "database error while checking username"}`, http.StatusInternalServerError)
 		return
 	}

@@ -5,6 +5,8 @@ import (
 	"errors"
 )
 
+var ErrGroupNotFound = errors.New("group not found")
+
 // GetGroupByName retrieves a group by its name from the database.
 // Returns: Group struct if found, otherwise an error.
 func (db *appdbimpl) GetGroupByName(groupName string) (*Group, error) {
@@ -15,7 +17,7 @@ func (db *appdbimpl) GetGroupByName(groupName string) (*Group, error) {
 	err := db.c.QueryRow(query, groupName).Scan(&group.Groupname, &group.GroupPhotoUrl)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New("group not found")
+			return nil, ErrGroupNotFound
 		}
 		return nil, err
 	}

@@ -5,6 +5,8 @@ import (
 	"errors"
 )
 
+var ErrUserNotFound = errors.New("user not found")
+
 // GetUser retrieves a user's details by their username.
 // RETURNS: User struct if found, otherwise an error.
 func (db *appdbimpl) GetUser(username string) (*User, error) {
@@ -19,7 +21,7 @@ func (db *appdbimpl) GetUser(username string) (*User, error) {
 	if err != nil {
 		// If no rows are found, return a custom error
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New("user not found")
+			return nil, ErrUserNotFound
 		}
 		// For other errors, return the original error
 		return nil, err

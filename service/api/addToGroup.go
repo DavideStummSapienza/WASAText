@@ -3,8 +3,10 @@ package api
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 
+	"github.com/DavideStummSapienza/WASAText/service/database"
 	"github.com/julienschmidt/httprouter"
 )
 
@@ -52,17 +54,16 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 		return
 	}
 	
-	var ErrUserNotFound = errors.New("user not found")
 
 	for _, newMember := range req.Names {
 		_, err = rt.db.GetUser(newMember)
 		if err != nil {
 			// Check if error is "user not found"
-			if errors.Is(err, ErrUserNotFound) {
+			if errors.Is(err, database.ErrUserNotFound) {
 				http.Error(w, `{"error": "User '`+newMember+`' does not exist"}`, http.StatusBadRequest)
 				return
 			}
-	
+			log.Print("Reached")
 			// if different error
 			http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
 			return
@@ -72,6 +73,9 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 
 	// Add users to group in database
 	err = rt.db.AddToGroup(req.GroupName, req.Names, username)
+
+
+
 	if err != nil {
 		http.Error(w, `{"error": "failed to add users to group"}`, http.StatusInternalServerError)
 		return
