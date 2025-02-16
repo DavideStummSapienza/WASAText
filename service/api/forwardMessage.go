@@ -89,13 +89,13 @@ func (rt *_router) forwardMessage(w http.ResponseWriter, r *http.Request, ps htt
 	}
 
 	// Create the NewMessage struct to forward the message.
-    newMessage := database.NewMessage{
-        FromUser:    username,
-        ToUser:      request.RecipientUsername,
-        Content:     originalMessage.Content,
-        IsPhoto:     originalMessage.IsPhoto,
-        IsForwarded: true, // Mark it as forwarded
-    }
+	newMessage := database.NewMessage{
+		FromUser:    username,
+		ToUser:      request.RecipientUsername,
+		Content:     originalMessage.Content,
+		IsPhoto:     originalMessage.IsPhoto,
+		IsForwarded: true, // Mark it as forwarded
+	}
 
 	// Forward the message to the new recipient.
 	messageID, err := rt.db.SendMessage(newMessage)

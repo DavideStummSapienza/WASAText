@@ -39,7 +39,6 @@ func (db *appdbimpl) ChangeGroupName(oldGroupName string, newGroupName string) e
 		return fmt.Errorf("database error while checking username: %w", err)
 	}
 
-
 	// Check if the new group name already exists
 	var newGroupExists int
 	err = db.c.QueryRow(`

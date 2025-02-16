@@ -14,7 +14,7 @@ type ChangeUsernameRequest struct {
 
 // ChangeUsernameResponse defines the structure of the response payload for a successful username change.
 type ChangeUsernameResponse struct {
-	Message    string `json:"message"`    // Success message
+	Message     string `json:"message"`     // Success message
 	NewUsername string `json:"newusername"` // The updated username
 }
 
@@ -92,7 +92,7 @@ func (rt *_router) changeUsername(w http.ResponseWriter, r *http.Request, ps htt
 
 	// Create a response with a success message and the updated username
 	response := ChangeUsernameResponse{
-		Message:    "username successfully changed",
+		Message:     "username successfully changed",
 		NewUsername: request.NewUsername,
 	}
 

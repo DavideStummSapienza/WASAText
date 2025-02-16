@@ -68,11 +68,10 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-
 	// If the user does not exist, create a new user and return the generated token
 	authToken := generateToken() // Generate a random auth token
 	err = rt.db.CreateUser(request.Username, "", authToken)
-	if err != nil{
+	if err != nil {
 		http.Error(w, `{"error": "Couldnt create new user"}`, http.StatusInternalServerError)
 		return
 	}

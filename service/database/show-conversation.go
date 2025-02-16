@@ -30,8 +30,8 @@ func (db *appdbimpl) ShowConversation(username, conversationPartnerName string) 
             OR (user1 = ? AND user2 = ?) 
             OR groupname = ?
     )
-    ORDER BY m.created_at DESC`, 
-    username, conversationPartnerName, conversationPartnerName, username, conversationPartnerName)
+    ORDER BY m.created_at DESC`,
+		username, conversationPartnerName, conversationPartnerName, username, conversationPartnerName)
 
 	if err != nil {
 		return nil, fmt.Errorf("error querying messages for conversation '%s': %w", conversationPartnerName, err)
@@ -95,4 +95,3 @@ func (db *appdbimpl) getReactionsForMessage(messageID int) ([]Reaction, error) {
 
 	return reactions, nil
 }
-

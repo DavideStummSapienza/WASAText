@@ -45,7 +45,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 		http.Error(w, `{"error": "group name must be between 3 and 16 characters"}`, http.StatusBadRequest)
 		return
 	}
-	
+
 	if len(req.Names) == 0 {
 		http.Error(w, `{"error": "at least one user must be added"}`, http.StatusBadRequest)
 		return

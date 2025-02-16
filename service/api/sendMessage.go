@@ -4,17 +4,15 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/julienschmidt/httprouter"
 	"github.com/DavideStummSapienza/WASAText/service/database"
+	"github.com/julienschmidt/httprouter"
 )
-
 
 // sendMessageRequest defines the structure of the request payload for sending a message.
 type sendMessageRequest struct {
-	Message   string `json:"message"`    // The message content (text)
-	IsPhoto   bool   `json:"is_photo"`    // Whether the message is a photo message
+	Message string `json:"message"`  // The message content (text)
+	IsPhoto bool   `json:"is_photo"` // Whether the message is a photo message
 }
-
 
 // sendMessage handles the API request to send a message to a specific user or group.
 //
@@ -35,7 +33,7 @@ type sendMessageRequest struct {
 // - 401 Unauthorized if the username is missing or invalid in the context.
 // - 404 Not Found if the conversation partner does not exist or is not a valid user.
 // - 500 Internal Server Error if there is a database error or if the message cannot be sent.
- 
+
 func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	// Set the content type of the response to JSON.
 	w.Header().Set("Content-Type", "application/json")
@@ -112,4 +110,3 @@ func (rt *_router) sendMessage(w http.ResponseWriter, r *http.Request, ps httpro
 		return
 	}
 }
-

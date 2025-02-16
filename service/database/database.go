@@ -59,7 +59,6 @@ type AppDatabase interface {
 	MarkAllMessagesAsRead(username string, partnerUsername string) error
 	GetMessage(messageID *int) (*ConversationDetail, error)
 
-
 	// Comment Functions
 	AddComment(messageID int, currentUser string, content string) error
 	DeleteComment(messageID int, reactorUsername string) error

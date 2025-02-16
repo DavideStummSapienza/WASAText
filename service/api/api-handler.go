@@ -7,7 +7,6 @@ import (
 // Handler returns an instance of httprouter.Router that handle APIs registered here
 func (rt *_router) Handler() http.Handler {
 
-
 	// | Unprotected Routes |
 
 	// Register routes
@@ -21,7 +20,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.POST("/session", rt.login)
 
 	// | Protected Routes |
-	
+
 	// Search
 	rt.router.GET("/users", rt.wrapWithAuth(rt.searchUsers))
 
@@ -31,7 +30,7 @@ func (rt *_router) Handler() http.Handler {
 	rt.router.PUT("/profile-picture", rt.wrapWithAuth(rt.changeProfilePicture))
 
 	// Conversation
-	rt.router.GET("/conversations/:partner-username", rt.wrapWithAuth(rt.showConversation)) 
+	rt.router.GET("/conversations/:partner-username", rt.wrapWithAuth(rt.showConversation))
 	rt.router.POST("/conversations/:partner-username", rt.wrapWithAuth(rt.sendMessage))
 	rt.router.POST("/conversations/:partner-username/messages/:message-id", rt.wrapWithAuth(rt.forwardMessage))
 	rt.router.DELETE("/conversations/messages/:message-id", rt.wrapWithAuth(rt.deleteMessage))

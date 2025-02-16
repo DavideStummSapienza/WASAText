@@ -45,7 +45,7 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 
 		// 3. Check if a conversation for the group already exists
 		err = tx.QueryRow(`SELECT id FROM conversations WHERE groupname = ?`, msg.ToUser).Scan(&conversationID)
-    
+
 		if err == sql.ErrNoRows {
 			// No existing conversation, create a new one
 			err = tx.QueryRow(`
@@ -77,7 +77,7 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 		}
 	}
 
-	// 5. Insert new message 
+	// 5. Insert new message
 	var messageID int
 	err = tx.QueryRow(`
 		INSERT INTO messages (content, sender, is_photo, is_forwarded, created_at, conversation_id) 
@@ -86,7 +86,6 @@ func (db *appdbimpl) SendMessage(msg NewMessage) (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert new message: %w", err)
 	}
-	
 
 	// 6. Mark message as "unread" and "unreceived" for the recipients
 	if isGroup {

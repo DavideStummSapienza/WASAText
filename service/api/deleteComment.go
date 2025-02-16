@@ -13,7 +13,6 @@ type DeleteCommentResponse struct {
 	Message string `json:"message"`
 }
 
-
 // deleteComment handles deleting a user's comment on a message.
 //
 // Parameters:
