@@ -1,7 +1,10 @@
 <template>
   <div class="outgoing-message">
-    <div v-if="isForwarded" class="forwarded"> Forwarded Message</div>
 
+    <!-- Forwarded -->
+    <div v-if="isForwarded" class="forwarded">Forwarded Message</div>
+
+    <!-- Photo display -->
     <div v-if="isPhoto">
       <img :src="content" alt="Sent Photo" class="message-photo" />
     </div>
@@ -30,6 +33,8 @@
       <button @click="addReaction('D:')">D:</button>
       <button @click="addReaction(':|')">:|</button>
     </div>
+
+    
   </div>
 </template>
 

@@ -1,32 +1,64 @@
 <template>
   <div class="incoming-message">
+
+    <!-- Sender Username -->
     <span class="username">{{ username }}</span>
 
-    <div v-if="isForwarded" class="forwarded"> Forwarded Message</div>
+    <!-- Forwarded -->
+    <div v-if="isForwarded" class="forwarded">Forwarded Message</div>
 
+    <!-- Photo display -->
     <div v-if="isPhoto">
-      <img :src="photoUrl" alt="Received Photo" class="message-photo" />
+      <img :src="content" alt="Received Photo" class="message-photo" />
     </div>
     <span v-else class="content">{{ content }}</span>
 
+    <!-- Timestamp -->
     <div class="message-info">
       <span class="timestamp">{{ timestamp }}</span>
     </div>
 
-    <button @click="react" class="reaction-button">+</button>
+    <!-- Reaction Button -->
+    <button @click="toggleReactionPopup" class="reaction-button">+</button>
 
+    <!-- Reactions Display -->
     <div class="reactions">
-      <span v-for="(reaction, index) in reactions" :key="index">{{ reaction }}</span>
+      <div v-for="(reaction, index) in reactions" :key="index">
+        <span>{{ reaction.reactor }}: </span><span>{{ reaction.content }}</span>
+      </div>
     </div>
+
+    <!-- Emoji Selection Popup -->
+    <div v-if="isReacting" class="reaction-popup">
+      <button @click="addReaction(':D')">:D</button>
+      <button @click="addReaction('D:')">D:</button>
+      <button @click="addReaction(':|')">:|</button>
+    </div>
+
+
   </div>
 </template>
 
 <script>
 export default {
-  props: ["username", "content", "timestamp", "isPhoto", "photoUrl", "isForwarded", "reactions"],
+  props: ["username", "content", "timestamp", "isPhoto", "isForwarded", "reactions"],
   methods: {
-    react() {
-      alert("Reacting to message!");
+    toggleReactionPopup() {
+      // Toggle the visibility of the emoji popup
+      this.isReacting = !this.isReacting;
+    },
+    addReaction(emoji) {
+      // Add the selected emoji to the reactions list along with the current username
+      const newReaction = {
+        reactor: this.username,  // Use the username passed via props
+        content: emoji
+      };
+      this.reactions.push(newReaction);
+      this.isReacting = false; // Close the popup after selection
+
+      // Optionally, send this reaction to the server to save it in the database
+      // Example:
+      // this.$emit('send-reaction', newReaction);
     }
   }
 };
