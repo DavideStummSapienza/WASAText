@@ -128,7 +128,8 @@ func New(db *sql.DB) (AppDatabase, error) {
 				id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
 				reactor_username TEXT NOT NULL REFERENCES users(username) ON DELETE CASCADE,
 				message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
-				content TEXT
+				content TEXT,
+				UNIQUE (reactor_username, message_id)
 			);
 		`,
 		"groups": `

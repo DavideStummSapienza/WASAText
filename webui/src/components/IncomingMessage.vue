@@ -42,23 +42,28 @@
 <script>
 export default {
   props: ["username", "content", "timestamp", "isPhoto", "isForwarded", "reactions"],
+  data() {
+    return {
+      isReacting: false,  // Flag to toggle the emoji popup visibility
+    };
+  },
   methods: {
     toggleReactionPopup() {
       // Toggle the visibility of the emoji popup
       this.isReacting = !this.isReacting;
     },
     addReaction(emoji) {
+
       // Add the selected emoji to the reactions list along with the current username
       const newReaction = {
-        reactor: this.username,  // Use the username passed via props
         content: emoji
       };
-      this.reactions.push(newReaction);
-      this.isReacting = false; // Close the popup after selection
 
-      // Optionally, send this reaction to the server to save it in the database
-      // Example:
-      // this.$emit('send-reaction', newReaction);
+      // emit newReaction
+      this.$emit("reaction-added", newReaction);
+
+      this.isReacting = false; // close Popup
+
     }
   }
 };
@@ -100,5 +105,37 @@ export default {
 .reactions {
   margin-top: 5px;
   font-size: 14px;
+}
+
+.reaction-button {
+  background-color: #005047;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: none;
+}
+
+.reaction-popup {
+  position: absolute;
+  bottom: 50px;
+  left: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.reaction-popup button {
+  background-color: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.reaction-popup button:hover {
+  color: #005047;
 }
 </style>

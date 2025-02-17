@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 )
 
 // AddComment inserts a comment into the `comments` table for a given message.
@@ -16,9 +17,12 @@ import (
 func (db *appdbimpl) AddComment(messageID int, currentUser string, content string) error {
 	_, err := db.c.Exec(`
         INSERT INTO comments (reactor_username, message_id, content)
-        VALUES (?, ?, ?)`, currentUser, messageID, content)
+        VALUES (?, ?, ?)
+        ON CONFLICT(reactor_username, message_id) 
+        DO UPDATE SET content = ?`, currentUser, messageID, content, content)
 
 	if err != nil {
+		log.Printf("failed to insert comment: %v", err)
 		return fmt.Errorf("failed to insert comment: %w", err)
 	}
 

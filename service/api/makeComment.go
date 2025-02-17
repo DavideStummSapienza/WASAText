@@ -59,10 +59,6 @@ func (rt *_router) makeComment(w http.ResponseWriter, r *http.Request, ps httpro
 	// Insert the comment into the database.
 	err = rt.db.AddComment(messageID, username, req.Content)
 	if err != nil {
-		if err.Error() == "message not found" {
-			http.Error(w, `{"error": "message not found"}`, http.StatusNotFound)
-			return
-		}
 		http.Error(w, `{"error": "failed to add comment"}`, http.StatusInternalServerError)
 		return
 	}

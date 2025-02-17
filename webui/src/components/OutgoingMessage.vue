@@ -34,7 +34,7 @@
       <button @click="addReaction(':|')">:|</button>
     </div>
 
-    
+
   </div>
 </template>
 
@@ -47,22 +47,24 @@ export default {
     };
   },
   methods: {
+
     toggleReactionPopup() {
       // Toggle the visibility of the emoji popup
       this.isReacting = !this.isReacting;
     },
+
     addReaction(emoji) {
+
       // Add the selected emoji to the reactions list along with the current username
       const newReaction = {
-        reactor: this.username,  // Use the username passed via props
         content: emoji
       };
-      this.reactions.push(newReaction);
-      this.isReacting = false; // Close the popup after selection
 
-      // Optionally, send this reaction to the server to save it in the database
-      // Example:
-      // this.$emit('send-reaction', newReaction);
+      // emit newReaction
+      this.$emit("reaction-added", newReaction);
+
+      this.isReacting = false; // close Popup
+
     }
   }
 };

@@ -13,6 +13,7 @@
         :is-photo="msg.is_photo"
         :is-forwarded="msg.is_forwarded"
         :reactions="msg.reactions"
+        @reaction-added="handleReaction(msg.message_id, $event)"
       />
       <OutgoingMessage 
         v-else 
@@ -23,6 +24,7 @@
         :reactions="msg.reactions"
         :fully-received="msg.fully_received"
         :fully-read="msg.fully_read"
+        @reaction-added="handleReaction(msg.message_id, $event)"
       />
     </div>
 
@@ -46,6 +48,7 @@ export default {
     };
   },
   methods: {
+
     async fetchMessages() {
       try {
         const partnerUsername = this.$route.query.username;
@@ -56,6 +59,7 @@ export default {
         console.error("Error fetching messages:", error);
       }
     },
+
     async handleSend(content) {
       try {
         const partnerUsername = this.$route.query.username;
@@ -84,6 +88,37 @@ export default {
         console.error("Error sending message:", error);
       }
     },
+
+    async handleReaction(messageId, reaction) {
+
+      // Find message and add Reaktion
+      const message = this.messages.find(msg => msg.message_id === messageId);
+
+      if (!message) {
+        console.error(`Message with ID ${messageId} not found!`);
+        return;
+      }
+
+      // Sicherstellen, dass `reactions` existiert
+      if (!message.reactions) {
+        message.reactions = [];
+      }
+
+      // Reaktion hinzufügen
+      message.reactions.push(reaction);
+
+      // Send reaction to server
+      try {
+
+        await axios.put(`/conversations/messages/${messageId}/comment`, reaction);
+
+      } catch (error) {
+
+        console.error("Error sending reaction:", error);
+
+      }
+    },
+
   },
   mounted() {
     this.fetchMessages();
