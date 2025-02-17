@@ -1,32 +1,38 @@
 <template>
   <div class="message-input">
-    <button @click="addImage">Send Image</button>
+
+    <input type="file" @change="handleFileUpload" accept="image/*" />
+    <button @click="sendImage">Send Image</button>
+
     <input v-model="message" placeholder="Type a message..." />
     <button @click="sendMessage">Send</button>
+
   </div>
 </template>
 
 <script>
 export default {
   data() {
-    return { message: '' };
+    return { message: '', imageFile: null };
   },
   methods: {
     sendMessage() {
       this.$emit('send', this.message);
       this.message = '';
     },
-    addImage() {
-      const url = prompt('Enter image URL:');
-      if (url) {
-        // Check if valid image URL
-        const urlMatch = url.match(/https?:\/\/\S+\.(jpg|jpeg|png|gif|bmp|svg|webp|tiff|ico|apng|webm|mp4|jpeg)/i);
-        if (urlMatch) {
-          this.$emit('send', url); // Send URL
-        } else {
-          alert('Invalid image URL');
-        }
+
+    handleFileUpload(event) {
+      this.imageFile = event.target.files[0];
+    },
+
+    sendImage() {
+      if (!this.imageFile) {
+        alert("Please select an image first.");
+        return;
       }
+
+      // Emit the image file to ChatView
+      this.$emit("send-image", this.imageFile);
     }
   }
 };

@@ -29,7 +29,7 @@
     </div>
 
     <!-- New Message Input -->
-    <MessageInput @send="handleSend" />
+    <MessageInput @send="handleSend" @send-image="handleImageUpload" />
 
   </div>
 </template>
@@ -87,6 +87,25 @@ export default {
         
       } catch (error) {
         console.error("Error sending message:", error);
+      }
+    },
+
+    async handleImageUpload(imageFile) {
+      try {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+
+        // Upload an das Backend
+        const uploadResponse = await axios.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        const imageUrl = uploadResponse.data.imageUrl;
+
+        // Bild als Nachricht senden
+        this.handleSend(imageUrl);
+      } catch (error) {
+        console.error("Error uploading image:", error);
       }
     },
 

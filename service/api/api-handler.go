@@ -16,10 +16,16 @@ func (rt *_router) Handler() http.Handler {
 	// Special routes
 	rt.router.GET("/liveness", rt.liveness)
 
+	// Image serving route
+    rt.router.ServeFiles("/uploads/*filepath", http.Dir("./uploads")) // make images publicly accessable
+
 	// Login
 	rt.router.POST("/session", rt.login)
 
 	// | Protected Routes |
+
+	// Image Upload
+	rt.router.POST("/upload", rt.wrapWithAuth(rt.uploadImage))
 
 	// Search
 	rt.router.GET("/users", rt.wrapWithAuth(rt.searchUsers))
