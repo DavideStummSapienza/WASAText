@@ -3,6 +3,7 @@ package database
 import (
 	"errors"
 	"fmt"
+	"log"
 )
 
 // AddToGroup adds multiple users to a group.
@@ -39,8 +40,12 @@ func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUse
 		return fmt.Errorf("failed to check if group exists: %w", err)
 	}
 
+
 	// If the group doesn't exist, create it
 	if groupCount == 0 {
+
+		log.Print("Group created")
+
 		_, err := db.c.Exec(`
 			INSERT INTO groups (groupname)
 			VALUES (?);
@@ -61,7 +66,9 @@ func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUse
 			return fmt.Errorf("failed to create conversation for new group: %w", err)
 		}
 
-		// Add the current user to the group (if not already a member)
+		log.Print("Conversation for group created")
+
+		// Add the current user to the group
 		_, err = db.c.Exec(`
 			INSERT INTO group_members (groupname, membername)
 			VALUES (?, ?);
@@ -70,6 +77,8 @@ func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUse
 		if err != nil {
 			return fmt.Errorf("failed to add current user to group: %w", err)
 		}
+
+		log.Printf("current user added to new group %s %s",groupname,currentUser)
 	}
 
 	// Add the other users to the group (if not already members)

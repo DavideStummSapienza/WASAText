@@ -17,7 +17,6 @@
         :content="msg.content" 
         :timestamp="msg.timestamp"
         :is-photo="msg.is_photo"
-        :photo-url="msg.photo_url"
         :is-forwarded="msg.is_forwarded"
         :reactions="msg.reactions"
         :fully-received="msg.fully_received"

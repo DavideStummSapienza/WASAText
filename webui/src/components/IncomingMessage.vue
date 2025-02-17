@@ -2,7 +2,7 @@
   <div class="incoming-message">
     <span class="username">{{ username }}</span>
 
-    <div v-if="isForwarded" class="forwarded">🔄 Forwarded Message</div>
+    <div v-if="isForwarded" class="forwarded"> Forwarded Message</div>
 
     <div v-if="isPhoto">
       <img :src="photoUrl" alt="Received Photo" class="message-photo" />

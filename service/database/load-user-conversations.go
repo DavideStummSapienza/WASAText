@@ -1,5 +1,7 @@
 package database
 
+import "time"
+
 // LoadUserConversations fetches a list of conversation previews for the given user.
 func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPreview, error) {
 	// SQL query to retrieve the required data for the conversation preview
@@ -23,11 +25,12 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 		END AS photo_url,
 		CASE
 			WHEN m.is_photo THEN 'Photo'
-			ELSE m.content
+			WHEN m.content IS NULL THEN 'No messages yet'
+        	ELSE m.content
 		END AS last_message,
 		m.created_at AS last_message_time
 	FROM conversations c
-	JOIN messages m ON m.id = (
+	LEFT JOIN messages m ON m.id = (
 		SELECT id FROM messages 
 		WHERE conversation_id = c.id 
 		ORDER BY created_at DESC 
@@ -36,7 +39,8 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 	LEFT JOIN users u1 ON u1.username = c.user1
 	LEFT JOIN users u2 ON u2.username = c.user2
 	LEFT JOIN groups g ON g.groupname = c.groupname
-	WHERE c.user1 = ? OR c.user2 = ? OR c.groupname = ?
+	LEFT JOIN group_members gm ON gm.groupname = c.groupname
+	WHERE c.user1 = ? OR c.user2 = ? OR gm.membername = ?
 	ORDER BY m.created_at DESC;
 	`
 
@@ -55,6 +59,11 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 		if err != nil {
 			return nil, err
 		}
+
+		if !preview.LastMessageTime.Valid {
+			preview.LastMessageTime.Time = time.Time{} // Default "zero time"
+		}
+
 		previews = append(previews, preview)
 	}
 

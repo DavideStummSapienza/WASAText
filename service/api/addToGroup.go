@@ -63,7 +63,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 				http.Error(w, `{"error": "User '`+newMember+`' does not exist"}`, http.StatusBadRequest)
 				return
 			}
-			log.Print("Reached")
+			log.Print("other database error")
 			// if different error
 			http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
 			return
@@ -75,7 +75,7 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 	err = rt.db.AddToGroup(req.GroupName, req.Names, username)
 	log.Print(err)
 	if err != nil {
-		http.Error(w, `{"error": "failed to add users to group"}`, http.StatusInternalServerError)
+		http.Error(w, `{"error": "failed to add users to group: `+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 

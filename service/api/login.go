@@ -46,7 +46,9 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 	// Check if the user already exists in the database
 	// Check if the username already exists using GetUser
 	existingUser, err := rt.db.GetUser(request.Username)
+	log.Print(err, existingUser)
 	if err == nil {
+
 		// If user exists, respond with their identifier
 		response := LoginResponse{Identifier: existingUser.AuthToken}
 		w.WriteHeader(http.StatusOK)
@@ -55,6 +57,8 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 			http.Error(w, `{"error": "failed to encode response"}`, http.StatusInternalServerError)
 			return
 		}
+		return
+
 	} else if !errors.Is(err, database.ErrUserNotFound) {
 		// If there's a database error, return an internal server error
 		log.Printf("Database error: %v", err)
