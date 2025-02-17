@@ -45,6 +45,7 @@ export default {
   data() {
     return {
       messages: [],
+      updateInterval: null,
     };
   },
   methods: {
@@ -112,6 +113,8 @@ export default {
 
         await axios.put(`/conversations/messages/${messageId}/comment`, reaction);
 
+        await this.fetchMessages();
+
       } catch (error) {
 
         console.error("Error sending reaction:", error);
@@ -120,9 +123,21 @@ export default {
     },
 
   },
+
   mounted() {
     this.fetchMessages();
-  }
+
+    this.updateInterval = setInterval(() => {
+      this.fetchMessages();
+    }, 10000);
+  },
+
+  beforeUnmount() {
+    // Delete the Interval
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+    }
+  },
 };
 </script>
 
