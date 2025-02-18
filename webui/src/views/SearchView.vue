@@ -3,7 +3,7 @@
     <h1 class="title">Choose User</h1>
     <input v-model="searchQuery" type="text" placeholder="Search..." class="search-bar" @input="fetchUsers" />
     <div class="user-list">
-      <UserCard v-for="user in users" :key="user.username" :user="user" />
+      <UserCard v-for="user in filteredUsers" :key="user.username" :user="user" />
     </div>
   </div>
 </template>
@@ -15,6 +15,11 @@ import UserCard from "@/components/UserCard.vue";
 export default {
   components: {
     UserCard,
+  },
+  computed: {
+    filteredUsers() {
+      return this.users.filter(user => user.username !== sessionStorage.getItem("currentUser"));
+    }
   },
   data() {
     return {

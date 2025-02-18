@@ -4,10 +4,14 @@
     <div class="profile-card">
       <!-- Profilbild -->
       <img class="profile-avatar" :src="profilePhotoURL" alt="User Avatar" />
+
+      <!-- Datei-Upload für das Profilbild -->
+      <input type="file" @change="handleFileUpload" accept="image/*" />
+      <button class="upload-button" @click="uploadProfilePicture">Upload Picture</button>
+
       <input type="text" class="profile-name" v-model="username" placeholder="Enter username" />
       <ErrorMsg v-if="errorMsg" :message="errorMsg" />
       <div class="button-group">
-        <!-- Speichern Button -->
         <button class="save-button" @click="saveProfile">Save</button>
       </div>
     </div>
@@ -15,59 +19,94 @@
 </template>
 
 <script>
-import axios from "@/services/axios"; // Wir verwenden axios für API-Anfragen
+import axios from "@/services/axios";
 import ErrorMsg from '@/components/ErrorMsg.vue';
 
 export default {
   components: { ErrorMsg },
   data() {
     return {
-      username: sessionStorage.getItem("currentUser"), // Der aktuelle Benutzername
-      profilePhotoURL: 'https://ui-avatars.com/api/?name=empty&size=100', // Das Profilbild-URL (Initialwert)
-      errorMsg: ""
+      username: "",
+      profilePhotoURL: 'https://ui-avatars.com/api/?name=empty&size=100',
+      errorMsg: "",
+      imageFile: null
     };
   },
   methods: {
-    // Methode, um den Benutzernamen zu speichern
-    async saveProfile() {
+    async fetchUser() {
       try {
-
-        this.errorMsg = "";
-
-        // API-Aufruf zum Ändern des Benutzernamens
-        const response = await axios.put("/user-profile", {
-          newusername: this.username
-        });
-
-        sessionStorage.setItem("currentUser", this.username)
-
-        if (response.data.message === 'username successfully changed') {
-          alert('Username updated successfully!');
+        const storedUsername = sessionStorage.getItem("currentUser");
+        
+        if (!storedUsername) {
+          console.error("No user found in sessionStorage.");
+          return;
         }
 
-        
-      } catch (error) {
-        console.error('Error saving profile:', error);
-        console.log("Full error response:", error.response);
+        this.username = storedUsername;
 
-        if (error.response && error.response.data.error) {
-          this.errorMsg = error.response.data.error;
-        } else {
-          this.errorMsg = "An unexpected error occurred.";
-        }  
+        const response = await axios.get(`/users`, {
+          params: { username: this.username },
+        });
+
+
+        if (response.data && response.data[0].username) {
+          this.username = response.data[0].username;
+          sessionStorage.setItem("currentUser", this.username);
+          this.profilePhotoURL = response.data[0].profile_photo_url || this.profilePhotoURL;
+        }
+      } catch (error) {
+        console.error("Error fetching user:", error);
       }
     },
 
-    // Methode, um das Profilbild zu ändern
-    async changeProfilePicture(newPhotoURL) {
+    async saveProfile() {
       try {
-        // API-Aufruf zum Ändern des Profilbildes
-        const response = await axios.put('/profile-picture', {
-          photo_url: newPhotoURL,
+        this.errorMsg = "";
+        const response = await axios.put("/user-profile", { newusername: this.username });
+        
+        if (response.data.message === 'username successfully changed') {
+          alert('Username updated successfully!');
+        }
+      } catch (error) {
+        console.error('Error saving profile:', error);
+        this.errorMsg = error.response?.data?.error || "An unexpected error occurred.";
+      }
+    },
+
+    handleFileUpload(event) {
+      this.imageFile = event.target.files[0];
+    },
+
+    async uploadProfilePicture() {
+      if (!this.imageFile) {
+        alert("Please select an image first.");
+        return;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("image", this.imageFile);
+
+        const uploadResponse = await axios.post("/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
         });
 
+        const imageUrl = uploadResponse.data.imageUrl;
+
+        // API-Call zum Aktualisieren des Profilbildes
+        await this.changeProfilePicture(imageUrl);
+
+      } catch (error) {
+        console.error("Error uploading profile picture:", error);
+        alert("Failed to upload profile picture.");
+      }
+    },
+
+    async changeProfilePicture(newPhotoURL) {
+      try {
+        const response = await axios.put('/profile-picture', { photo_url: newPhotoURL });
         if (response.data.message === 'profile picture successfully updated') {
-          this.profilePhotoURL = newPhotoURL; // Profilbild im Frontend aktualisieren
+          this.profilePhotoURL = newPhotoURL;
           alert('Profile picture updated!');
         }
       } catch (error) {
@@ -75,13 +114,18 @@ export default {
         alert('Failed to update profile picture.');
       }
     },
+
+  },
+
+  mounted() {
+
+    this.fetchUser();
+
   },
 };
 </script>
 
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap');
-
+<<style scoped>
 .profile-settings {
   display: flex;
   flex-direction: column;
@@ -91,11 +135,6 @@ export default {
   background-color: #65558f;
   font-family: 'Roboto', sans-serif;
   color: white;
-}
-
-.profile-title {
-  font-size: 40px;
-  margin-bottom: 20px;
 }
 
 .profile-card {
@@ -109,37 +148,39 @@ export default {
 }
 
 .profile-avatar {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
   margin-bottom: 20px;
 }
 
 .profile-name {
-  font-size: 20px;
-  padding: 10px;
+  font-size: 24px;
+  padding: 12px;
   border: 1px solid black;
   border-radius: 10px;
   text-align: center;
-  width: 200px;
+  width: 250px;
   margin-bottom: 20px;
+}
+
+.upload-button, .save-button {
+  margin-top: 10px;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.upload-button:hover, .save-button:hover {
+  background-color: #0056b3;
 }
 
 .button-group {
   display: flex;
-  gap: 20px;
-}
-
-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 26px;
-  font-size: 16px;
-  cursor: pointer;
-  font-weight: 500;
-}
-
-.save-button {
-  background-color: #21005d;
-  color: white;
+  gap: 10px;
 }
 </style>
