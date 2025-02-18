@@ -159,6 +159,8 @@ security:
 tags:
   - name: Login
     description: User authentication and login endpoint
+  - name: Upload Images
+    description: Images upload endpoint
   - name: Search
     description: User search and filtering endpoint
   - name: User Profile
@@ -212,6 +214,51 @@ paths:
                     # or any other type of identifier
                     type: integer
                     example: 484916884
+                    
+  
+  /upload:
+    post:
+      tags:
+        - Upload Images
+      summary: Upload images to the server
+      description: |
+        User chooses an image from their local machine and uploads it to the server, where it is saved.
+      operationId: uploadImages
+      requestBody:
+        description: Image data to be uploaded
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image:
+                  type: string
+                  format: binary
+                  description: The image file to be uploaded
+                  example: "file.jpg"
+      responses:
+        '200':
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  imageUrl:
+                    type: string
+                    description: The URL of the uploaded image
+                    pattern: '^/uploads/.*\.(jpg|jpeg|png|gif)$'
+                    minLength: 1
+                    maxLength: 255
+                    example: "localhost:3000/uploads/12345.jpg"
+        '400':
+          description: Invalid file or missing file
+        '500':
+          description: Server error
+      
+  
+  
   /users:
     get: 
       tags:
@@ -354,6 +401,9 @@ paths:
                       pattern: "^.*?$"
                       minLength: 3
                       maxLength: 16
+                    is_group:
+                      type: boolean
+                      example: true
                     photo_url:
                       type: string
                       pattern: '^[A-Za-z0-9 ]+$'
@@ -399,7 +449,7 @@ paths:
                   pattern: '^[A-Za-z0-9 ]+$'
                   minLength: 1
                   maxLength: 255
-                  example: https://www.images.com/images/{image}
+                  example: "localhost:3000/uploads/889"
       responses:
         "200":
           description: Profil Picture has been successfully changed
@@ -917,10 +967,3 @@ paths:
     
       
       
-
-        
-        
-    
-                    
-    
-            

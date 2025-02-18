@@ -24,7 +24,7 @@ export default {
       return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     },
     goToConversation() {
-      this.$router.push({ path: '/chat', query: { username: this.chat.name } });
+      this.$router.push({ path: '/chat', query: { username: this.chat.name, isGroup: this.chat.is_group } });
     }
   }
 };

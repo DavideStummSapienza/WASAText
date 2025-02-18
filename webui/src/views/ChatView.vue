@@ -3,6 +3,13 @@
     <!-- Partner Username as Title -->
     <h1 class="chat-title">{{this.$route.query.username}}</h1>
 
+    <!-- Group Settings Button (nur wenn es eine Gruppe ist) -->
+    <div v-if="this.$route.query.isGroup">
+      <button @click="goToGroupSettings" class="group-settings-button">
+        Group Settings
+      </button>
+    </div>
+
     <!-- Show the messages List -->
     <div v-for="msg in messages" :key="msg.message_id">
       <IncomingMessage 
@@ -59,6 +66,13 @@ export default {
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
+    },
+
+    goToGroupSettings() {
+      this.$router.push({
+        path: "/group-settings",
+        query: { groupname: this.$route.query.username }
+      });
     },
 
     async handleSend(content) {
@@ -164,4 +178,23 @@ export default {
 
 <style scoped>
 .chat-view { background: #65558f; padding: 20px; }
+
+.group-settings-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin-top: 50px;
+  margin-right: 25px;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.group-settings-button:hover {
+  background-color: #45a049;
+}
 </style>

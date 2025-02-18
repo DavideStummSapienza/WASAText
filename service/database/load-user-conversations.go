@@ -28,7 +28,11 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 			WHEN m.content IS NULL THEN 'No messages yet'
         	ELSE m.content
 		END AS last_message,
-		m.created_at AS last_message_time
+		m.created_at AS last_message_time,
+		CASE 
+    		WHEN c.groupname IS NOT NULL THEN true
+    		ELSE false
+		END AS is_group
 	FROM conversations c
 	LEFT JOIN messages m ON m.id = (
 		SELECT id FROM messages 
@@ -55,7 +59,7 @@ func (db *appdbimpl) LoadUserConversations(username string) ([]ConversationPrevi
 	var previews []ConversationPreview
 	for rows.Next() {
 		var preview ConversationPreview
-		err := rows.Scan(&preview.Name, &preview.PhotoURL, &preview.LastMessage, &preview.LastMessageTime)
+		err := rows.Scan(&preview.Name, &preview.PhotoURL, &preview.LastMessage, &preview.LastMessageTime, &preview.IsGroup)
 		if err != nil {
 			return nil, err
 		}

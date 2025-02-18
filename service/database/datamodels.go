@@ -8,6 +8,7 @@ import (
 // ConversationPreview represents the preview information for a conversation.
 type ConversationPreview struct {
 	Name            string         `json:"name"`              // Username or Group Name
+	IsGroup         bool           `json:"is_group"`          // flag if it is a group
 	PhotoURL        sql.NullString `json:"photo_url"`         // Profile Photo URL
 	LastMessage     sql.NullString `json:"last_message"`      // Snippet or Photo Icon
 	LastMessageTime sql.NullTime   `json:"last_message_time"` // Timestamp of Last Message

@@ -15,7 +15,7 @@
 
     <!-- Timestamp -->
     <div class="message-info">
-      <span class="timestamp">{{ timestamp }}</span>
+      <span class="timestamp">{{ formatTime(timestamp) }}</span>
     </div>
 
     <!-- Reaction Button -->
@@ -64,7 +64,12 @@ export default {
 
       this.isReacting = false; // close Popup
 
-    }
+    },
+
+    formatTime(timestamp) {
+      if (!timestamp) return "";
+      return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    },
   }
 };
 </script>

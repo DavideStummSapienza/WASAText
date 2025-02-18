@@ -12,7 +12,7 @@
 
     <!-- Message Status and Timestamp -->
     <div class="message-status">
-      <span class="timestamp">{{ timestamp }}</span>
+      <span class="timestamp">{{ formatTime(timestamp) }}</span>
       <span v-if="fullyRead" class="status">✔✔</span>
       <span v-else-if="fullyReceived" class="status">✔</span>
     </div>
@@ -65,7 +65,12 @@ export default {
 
       this.isReacting = false; // close Popup
 
-    }
+    },
+
+    formatTime(timestamp) {
+      if (!timestamp) return "";
+      return new Date(timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    },
   }
 };
 </script>
