@@ -59,8 +59,6 @@ func (rt *_router) changeGroupName(w http.ResponseWriter, r *http.Request, ps ht
 		return
 	}
 
-	
-
 	_, err = rt.db.GetUser(req.NewGroupName)
 	if err == nil {
 		http.Error(w, `{"error": "group name already exists as a username"}`, http.StatusBadRequest)

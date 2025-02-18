@@ -42,7 +42,6 @@ func (rt *_router) login(w http.ResponseWriter, r *http.Request, ps httprouter.P
 		return
 	}
 
-
 	// Check if the user already exists in the database
 	// Check if the username already exists using GetUser
 	existingUser, err := rt.db.GetUser(request.Username)

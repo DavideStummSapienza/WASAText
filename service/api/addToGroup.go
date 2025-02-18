@@ -53,7 +53,6 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 		http.Error(w, `{"error": "at least one other user must be added"}`, http.StatusBadRequest)
 		return
 	}
-	
 
 	for _, newMember := range req.Names {
 		_, err = rt.db.GetUser(newMember)
@@ -69,7 +68,6 @@ func (rt *_router) addToGroup(w http.ResponseWriter, r *http.Request, _ httprout
 			return
 		}
 	}
-		
 
 	// Add users to group in database
 	err = rt.db.AddToGroup(req.GroupName, req.Names, username)

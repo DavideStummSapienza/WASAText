@@ -64,16 +64,13 @@ func (rt *_router) changeUsername(w http.ResponseWriter, r *http.Request, ps htt
 		return
 	}
 
-	
-	
-
 	// Check if the new username already exists in the database
 	_, err := rt.db.GetUser(request.NewUsername)
 	if err == nil {
 		// If no error, the username already exists
 		http.Error(w, `{"error": "username already exists"}`, http.StatusBadRequest)
 		return
-	} else if !errors.Is(err,database.ErrUserNotFound) {
+	} else if !errors.Is(err, database.ErrUserNotFound) {
 		// If an unexpected database error occurs
 		http.Error(w, `{"error": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return

@@ -18,8 +18,6 @@ import (
 // - error: If an error occurs during the process, such as a database failure or permission issue, an error is returned.
 func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUser string) error {
 
-
-
 	// Check if the groupname already exists as a username
 	_, err := db.GetUser(groupname)
 	if err == nil {
@@ -39,7 +37,6 @@ func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUse
 	if err != nil {
 		return fmt.Errorf("failed to check if group exists: %w", err)
 	}
-
 
 	// If the group doesn't exist, create it
 	if groupCount == 0 {
@@ -78,7 +75,7 @@ func (db *appdbimpl) AddToGroup(groupname string, usernames []string, currentUse
 			return fmt.Errorf("failed to add current user to group: %w", err)
 		}
 
-		log.Printf("current user added to new group %s %s",groupname,currentUser)
+		log.Printf("current user added to new group %s %s", groupname, currentUser)
 	}
 
 	// Add the other users to the group (if not already members)
